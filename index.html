@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>מערכת מעליות שבת - יצחק שמיר 17</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; background-color: #121212; overflow: hidden; font-family: sans-serif; }
+        #setup { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: white; text-align: center; padding: 20px; }
+        .btn-wake { background-color: #3700b3; color: white; border: none; padding: 25px 50px; font-size: 1.8em; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .btn-wake:hover { background-color: #6200ea; transform: scale(1.05); }
+        #app-frame { display: none; width: 100vw; height: 100vh; border: none; }
+        .info { color: #888; margin-top: 20px; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <div id="setup">
+        <h1 style="color: #bb86fc;">הכנה לשבת קודש</h1>
+        <p class="info">לחץ על הכפתור למטה ביום שישי לפני כניסת השבת.<br>המסך יינעל במצב דולק והמערכת תופעל אוטומטית.</p>
+        <button id="wakeBtn" class="btn-wake">הפעל נעילת מסך לשבת</button>
+        <p style="color: #444; margin-top: 40px; font-size: 0.8em;">יצחק שמיר 17, גבעת שמואל</p>
+    </div>
+
+    <iframe id="app-frame" src="app.html"></iframe>
+
+    <script>
+        let wakeLock = null;
+
+        document.getElementById('wakeBtn').addEventListener('click', async () => {
+            try {
+                // בקשת נעילה - תעבוד בכל שעה ביום שישי
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log("Wake Lock is active!");
+                    
+                    // מעבר לתצוגת האפליקציה
+                    document.getElementById('setup').style.display = 'none';
+                    document.getElementById('app-frame').style.display = 'block';
+                }
+            } catch (err) {
+                alert("שגיאה: הדפדפן חסם את נעילת המסך. ודא שהאתר רץ ב-HTTPS.");
+            }
+        });
+
+        // רענון החלון הפנימי כל 3 שעות לשמירה על יציבות (מבלי לאבד את הנעילה)
+        setInterval(() => {
+            const frame = document.getElementById('app-frame');
+            if (frame.style.display === 'block') {
+                frame.src = frame.src;
+            }
+        }, 1000 * 60 * 60 * 3);
+    </script>
+</body>
+</html>
