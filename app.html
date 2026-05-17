@@ -161,6 +161,10 @@
         const RIGHT_CYCLE_SECONDS = 480; 
         const LEFT_CYCLE_SECONDS = 480;  
 
+        // הגדרת סוגי הקומות לתצוגה ברשימה ("all" = הכל, "even" = זוגי בלבד, "odd" = אי-זוגי בלבד)
+        const RIGHT_FLOORS_MODE = "odd";  
+        const LEFT_FLOORS_MODE = "even";  
+
         const broker = "0852feda51774f119a43581a3c72b6b9.s1.eu.hivemq.cloud"; 
         const port = 8884; 
         const mqtt_user = "avihai"; 
@@ -176,16 +180,25 @@
         let rightTimerEnd = localStorage.getItem("rightTimerEnd") ? parseInt(localStorage.getItem("rightTimerEnd")) : 0;
         let leftTimerEnd = localStorage.getItem("leftTimerEnd") ? parseInt(localStorage.getItem("leftTimerEnd")) : 0;
 
-        function initDropdowns() {
+        // פונקציית עזר לבניית רשימת הקומות לפי המוד (זוגי/אי-זוגי/הכל)
+        function buildOptionsHTML(mode) {
             let opts = '<option value="">ללא</option>';
             for(let i = MAX_BUILDING_FLOORS; i >= 0; i--) {
-                opts += `<option value="${i}">קומה ${i}</option>`;
+                // קומה 0 (לובי) תמיד תוצג. שאר הקומות יסוננו לפי המוד.
+                if (i === 0 || mode === "all" || (mode === "even" && i % 2 === 0) || (mode === "odd" && i % 2 !== 0)) {
+                    opts += `<option value="${i}">קומה ${i}</option>`;
+                }
             }
-            
+            return opts;
+        }
+
+        function initDropdowns() {
             const rSel = document.getElementById("rightFloorSelect");
             const lSel = document.getElementById("leftFloorSelect");
-            rSel.innerHTML = opts;
-            lSel.innerHTML = opts;
+            
+            // הזנת האפשרויות לפי ההגדרה הקשיחה של הבניין
+            rSel.innerHTML = buildOptionsHTML(RIGHT_FLOORS_MODE);
+            lSel.innerHTML = buildOptionsHTML(LEFT_FLOORS_MODE);
 
             if(localStorage.getItem("rightUserFloor")) rSel.value = localStorage.getItem("rightUserFloor");
             if(localStorage.getItem("leftUserFloor")) lSel.value = localStorage.getItem("leftUserFloor");
