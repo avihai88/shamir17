@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תוכן המעליות</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; margin: 0; padding: 20px; padding-top: 30px; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }
         
         .bsd { position: absolute; top: 15px; right: 15px; font-size: 0.85em; color: #888; z-index: 1000; }
+        .viewers { position: absolute; top: 18px; left: 55px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
 
         #authBtn {
             position: absolute;
@@ -66,6 +67,7 @@
             body { padding: 5px 15px; padding-top: 20px; }
             .bsd { top: 5px; right: 10px; font-size: 0.75em; }
             #authBtn { top: 5px; left: 10px; font-size: 1.5em; }
+            .viewers { top: 13px; left: 45px; font-size: 0.8em; }
             h2 { font-size: 1.2em; margin-bottom: 5px; }
             #parasha-line { font-size: 1.1em; margin-bottom: 2px; }
             .shabbat-times { font-size: 0.95em; margin-bottom: 5px; }
@@ -84,6 +86,7 @@
 <body>
 
     <div class="bsd">בס״ד</div>
+    <div class="viewers" title="צופים מחוברים כעת">👁️ <span id="uCount">0</span></div>
     <button id="authBtn" title="אזור מפתחים">🔒</button>
 
     <div class="header">
@@ -149,6 +152,10 @@
     </div>
 
     <script>
+        // --- התחברות לשרת המתווך (WebSockets) ---
+        // החלף את הכתובת בשורה הזו לכתובת של השרת שיצרת ב-Render.com
+        const socket = io("https://shamir17.onrender.com", { autoConnect: false }); 
+
         // ==========================================
         // --- הגדרות משתנים לבניינים ---
         // ==========================================
@@ -161,18 +168,10 @@
         const RIGHT_CYCLE_SECONDS = 480; 
         const LEFT_CYCLE_SECONDS = 480;  
 
-        // הגדרת סוגי הקומות לתצוגה ברשימה ("all" = הכל, "even" = זוגי בלבד, "odd" = אי-זוגי בלבד)
         const RIGHT_FLOORS_MODE = "odd";  
         const LEFT_FLOORS_MODE = "even";  
 
-        const broker = "0852feda51774f119a43581a3c72b6b9.s1.eu.hivemq.cloud"; 
-        const port = 8884; 
-        const mqtt_user = "avihai"; 
-        const mqtt_pass = "Love5683";
-        const clientId = "AppFrame-" + Math.random().toString(16).substr(2, 8);
-        const client = new Paho.MQTT.Client(broker, port, "/mqtt", clientId);
-
-        let shabbatStart = null, shabbatEnd = null, mqttConnected = false;
+        let shabbatStart = null, shabbatEnd = null;
         let isSimulationActive = false; 
 
         let rightLastFloor = null;
@@ -180,11 +179,9 @@
         let rightTimerEnd = localStorage.getItem("rightTimerEnd") ? parseInt(localStorage.getItem("rightTimerEnd")) : 0;
         let leftTimerEnd = localStorage.getItem("leftTimerEnd") ? parseInt(localStorage.getItem("leftTimerEnd")) : 0;
 
-        // פונקציית עזר לבניית רשימת הקומות לפי המוד (זוגי/אי-זוגי/הכל)
         function buildOptionsHTML(mode) {
             let opts = '<option value="">ללא</option>';
             for(let i = MAX_BUILDING_FLOORS; i >= 0; i--) {
-                // קומה 0 (לובי) תמיד תוצג. שאר הקומות יסוננו לפי המוד.
                 if (i === 0 || mode === "all" || (mode === "even" && i % 2 === 0) || (mode === "odd" && i % 2 !== 0)) {
                     opts += `<option value="${i}">קומה ${i}</option>`;
                 }
@@ -196,7 +193,6 @@
             const rSel = document.getElementById("rightFloorSelect");
             const lSel = document.getElementById("leftFloorSelect");
             
-            // הזנת האפשרויות לפי ההגדרה הקשיחה של הבניין
             rSel.innerHTML = buildOptionsHTML(RIGHT_FLOORS_MODE);
             lSel.innerHTML = buildOptionsHTML(LEFT_FLOORS_MODE);
 
@@ -309,19 +305,15 @@
                 shabbatEnd = null;
 
                 for (let item of data.items) {
-                    // תפיסת זמן כניסת השבת/חג הראשון שמופיע (יעיל לחגים מחוברים)
                     if (item.category === "candles" && !shabbatStart) {
                         shabbatStart = new Date(item.date);
                     }
-                    // המשך דריסה כדי לתפוס את ההבדלה האחרונה בהחלט
                     if (item.category === "havdalah") {
                         shabbatEnd = new Date(item.date);
                     }
-                    // איסוף שם החג בנפרד (אם קיים באותו סופ"ש)
                     if (item.category === "holiday" && !holidayName) {
                         holidayName = item.hebrew;
                     }
-                    // איסוף שם פרשת השבוע בנפרד
                     if (item.category === "parashat" && !parashaName) {
                         parashaName = item.hebrew;
                     }
@@ -329,7 +321,6 @@
 
                 if (shabbatEnd && new Date() > shabbatEnd) { fetchShabbatTimes(1); return; }
                 
-                // חיבור שמות החג והפרשה (אם שניהם קיימים)
                 let displayTitleArr = [];
                 if (holidayName) displayTitleArr.push(holidayName);
                 if (parashaName) displayTitleArr.push(parashaName);
@@ -362,6 +353,7 @@
             }
 
             const isVisibleWindow = (displayStartTime && shabbatEnd && now >= displayStartTime && now <= shabbatEnd);
+            
             if (isVisibleWindow || isOverrideOn) {
                 document.getElementById("standby-msg").style.display = "none";
                 document.getElementById("elevator-container").style.display = "flex";
@@ -372,40 +364,28 @@
                     syncNote.style.display = "block";
                 } else syncNote.style.display = "none";
                 
-                if (!mqttConnected) connectMQTT();
+                // התחברות לשרת שלנו רק כשהחלון פתוח (חוסך משאבים לשרת)
+                if (!socket.connected) socket.connect();
             } else {
                 document.getElementById("standby-msg").style.display = "block";
                 document.getElementById("elevator-container").style.display = "none";
                 document.getElementById("sync-note").style.display = "none";
-                if (mqttConnected) { client.disconnect(); mqttConnected = false; }
+                
+                // התנתקות מהשרת כשהשבת יוצאת
+                if (socket.connected) socket.disconnect();
             }
         }
 
-        function connectMQTT() {
-            client.connect({
-                useSSL: true, userName: mqtt_user, password: mqtt_pass,
-                onSuccess: () => {
-                    mqttConnected = true;
-                    client.subscribe("building/elevator/left");
-                    client.subscribe("building/elevator/right");
-                },
-                onFailure: () => setTimeout(connectMQTT, 5000)
-            });
-        }
+        // --- האזנה לאירועים מהשרת ---
+        socket.on('viewers_count', (count) => {
+            document.getElementById("uCount").innerText = count;
+        });
 
-        client.onConnectionLost = () => {
-            mqttConnected = false;
-            if (overrideCheckbox.checked || (shabbatStart && shabbatEnd && new Date() >= shabbatStart && new Date() <= shabbatEnd)) {
-                setTimeout(connectMQTT, 5000); 
-            }
-        };
-
-        client.onMessageArrived = (msg) => {
-            const topic = msg.destinationName; 
-            const payload = msg.payloadString;
+        socket.on('elevator_update', (data) => {
+            const payload = data.floor;
             let val = (payload === "-99") ? "תקלה" : (payload === "-1") ? "⬇️" : (payload === "-2") ? "⬆️" : payload;
             
-            if (topic.includes("left")) {
+            if (data.side === 'left') {
                 const el = document.getElementById("leftFloor");
                 el.innerText = val;
                 if (payload === "-99") el.classList.add("floor-error"); else el.classList.remove("floor-error");
@@ -429,7 +409,7 @@
                 }
                 rightLastFloor = payload;
             }
-        };
+        });
 
         initDropdowns();
         fetchShabbatTimes();
