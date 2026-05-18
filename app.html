@@ -302,17 +302,44 @@
                 const url = `https://www.hebcal.com/shabbat?cfg=json&geonameid=294998&b=18&M=on&gy=${targetDate.getFullYear()}&gm=${targetDate.getMonth()+1}&gd=${targetDate.getDate()}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                let parasha = "";
+                
+                let holidayName = "";
+                let parashaName = "";
+                shabbatStart = null;
+                shabbatEnd = null;
+
                 for (let item of data.items) {
-                    if (item.category === "candles") shabbatStart = new Date(item.date);
-                    if (item.category === "havdalah") shabbatEnd = new Date(item.date);
-                    if (item.category === "parashat") parasha = item.hebrew;
+                    // תפיסת זמן כניסת השבת/חג הראשון שמופיע (יעיל לחגים מחוברים)
+                    if (item.category === "candles" && !shabbatStart) {
+                        shabbatStart = new Date(item.date);
+                    }
+                    // המשך דריסה כדי לתפוס את ההבדלה האחרונה בהחלט
+                    if (item.category === "havdalah") {
+                        shabbatEnd = new Date(item.date);
+                    }
+                    // איסוף שם החג בנפרד (אם קיים באותו סופ"ש)
+                    if (item.category === "holiday" && !holidayName) {
+                        holidayName = item.hebrew;
+                    }
+                    // איסוף שם פרשת השבוע בנפרד
+                    if (item.category === "parashat" && !parashaName) {
+                        parashaName = item.hebrew;
+                    }
                 }
+
                 if (shabbatEnd && new Date() > shabbatEnd) { fetchShabbatTimes(1); return; }
-                document.getElementById("parasha-line").innerText = parasha || "שבת קודש";
+                
+                // חיבור שמות החג והפרשה (אם שניהם קיימים)
+                let displayTitleArr = [];
+                if (holidayName) displayTitleArr.push(holidayName);
+                if (parashaName) displayTitleArr.push(parashaName);
+                
+                document.getElementById("parasha-line").innerText = displayTitleArr.length > 0 ? displayTitleArr.join(" | ") : "שבת קודש";
+                
                 const opt = {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Jerusalem'};
                 if (shabbatStart) document.getElementById("start-time").innerText = shabbatStart.toLocaleTimeString('he-IL', opt);
                 if (shabbatEnd) document.getElementById("end-time").innerText = shabbatEnd.toLocaleTimeString('he-IL', opt);
+                
                 evaluateSystemState();
             } catch (e) { document.getElementById("parasha-line").innerText = "שגיאת נתונים"; }
         }
