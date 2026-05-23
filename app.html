@@ -2,106 +2,114 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מעליות שבת - יצחק שמיר 17</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        /* שומרים על גוף המסך כרקע שחור, ממורכז, ללא שום אפשרות גלילה */
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #121212;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        body { 
+            background-color: #121212; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px 10px 40px 10px; /* מאפשר גלילה חלקה עם מרווח למטה */
+            box-sizing: border-box; 
+            overflow-y: auto; /* מחזיר את אפשרות הגלילה */
+            overflow-x: hidden;
         }
 
-        /* זהו ה"קנבס" שלנו - המידות שלו קבועות לנצח והוא פשוט עובר זום דינמי */
-        #app-wrapper {
-            width: 480px;
-            height: 820px;
+        /* מעטפת מרכזית ששומרת על פרופורציה ולא נמתחת על כל המסך בטאבלט/מחשב */
+        #main-container {
+            max-width: 500px;
+            margin: 0 auto;
             position: relative;
-            background-color: #121212;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            text-align: center;
-            box-sizing: border-box;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transform-origin: center center;
         }
         
-        .bsd { position: absolute; top: 15px; right: 20px; font-size: 0.85em; color: #888; z-index: 1000; }
-        .viewers { position: absolute; top: 15px; left: 55px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
+        .bsd { position: absolute; top: -10px; right: 5px; font-size: 0.85em; color: #888; z-index: 1000; }
+        .viewers { position: absolute; top: -10px; left: 40px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
 
         #authBtn {
-            position: absolute; top: 5px; left: 15px; background: none; border: none;
+            position: absolute; top: -15px; left: 0; background: none; border: none;
             font-size: 1.8em; cursor: pointer; opacity: 0.3; transition: opacity 0.3s; z-index: 1000;
         }
         #authBtn:hover { opacity: 0.8; }
 
-        .header { margin-top: 10px; }
+        .header { margin-top: 20px; margin-bottom: 20px; }
         h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.6em; color: #ffffff; }
         #parasha-line { color: #bb86fc; font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
-        .shabbat-times { color: #aaaaaa; font-size: 1.2em; margin-bottom: 15px; }
+        .shabbat-times { color: #aaaaaa; font-size: 1.2em; margin-bottom: 20px; }
         
         #weather-line { color: #4dd0e1; font-size: 1.2em; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .weather-temp { color: #ffffff; direction: ltr; margin-right: 5px; }
         
         #clock-line { font-size: 4em; font-weight: bold; margin-bottom: 5px; font-variant-numeric: tabular-nums; line-height: 1; }
-        #gregorian-date { color: #888; font-size: 1.1em; margin-bottom: 15px; font-weight: 500; }
+        #gregorian-date { color: #888; font-size: 1.1em; margin-bottom: 25px; font-weight: 500; }
 
-        #info-message { color: #aaaaaa; font-size: 1.2em; margin-bottom: 15px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
+        #info-message { color: #aaaaaa; font-size: 1.2em; margin-bottom: 25px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
 
-        #elevator-container { display: flex; justify-content: center; gap: 20px; width: 100%; margin: 0 auto; }
+        #elevator-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            width: 100%; 
+        }
         
         .elevator-box { 
             background: #1e1e1e; 
             border-radius: 15px; 
-            padding: 25px 20px; 
+            padding: 25px 15px; 
             flex: 1; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: space-between; 
+            justify-content: flex-start; /* מונע מתיחה אנכית מוגזמת */
         }
         
-        .title { color: #888; font-size: 1.2em; margin-bottom: 10px; }
-        .floor { font-size: 6.5em; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; margin: 5px 0; line-height: 1;}
+        .title { color: #888; font-size: 1.2em; margin-bottom: 15px; }
+        .floor { font-size: 6.5em; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; margin: 10px 0; line-height: 1;}
         .floor-error { color: #ff4444; font-size: 3em; }
         
-        .timer-display { margin-top: 5px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 45px; display: flex; align-items: center; justify-content: center; direction: ltr;}
+        .timer-display { margin-top: 10px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 45px; display: flex; align-items: center; justify-content: center; direction: ltr;}
         
-        .floor-select-wrap { margin-top: 15px; font-size: 1.1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px; width: 100%;}
-        .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 6px 10px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none; width: 100%;}
+        .floor-select-wrap { margin-top: 20px; font-size: 1.1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px; width: 100%; box-sizing: border-box;}
+        .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none; width: 100%; box-sizing: border-box;}
         
-        .developer-credit { margin-top: 10px; font-size: 0.85em; color: #666; text-align: center; }
+        .developer-credit { margin-top: 40px; font-size: 0.85em; color: #666; text-align: center; }
         .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
         .developer-credit a:hover { color: #bb86fc; }
 
         #devPanel { 
-            display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            padding: 20px; background: rgba(26,26,26,0.95); border-radius: 10px; border: 1px solid #555; 
-            color: #aaaaaa; font-size: 0.9em; text-align: right; width: 90%; max-width: 400px; 
-            z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.8); box-sizing: border-box;
+            display: none; margin-top: 30px; padding: 20px; background: #1a1a1a; 
+            border-radius: 10px; border: 1px solid #333; color: #aaaaaa; 
+            font-size: 0.9em; text-align: right; box-sizing: border-box;
         }
-        #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; }
-        .dev-btn { background: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
+        .dev-btn { background: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; width: 100%;}
         .dev-btn:hover { background: #6200ea; }
-        .dev-btn-danger { background: #cf6679; color: #000; }
+        .dev-btn-danger { background: #cf6679; color: #000; margin-top: 5px;}
         .dev-btn-danger:hover { background: #ff7597; }
 
+        /* התאמות קלות למסכים שוכבים כדי שהגלילה תהיה נוחה */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body { padding: 15px 10px; }
+            #main-container { max-width: 600px; }
+            .header { margin-top: 10px; margin-bottom: 10px; }
+            h2 { font-size: 1.3em; margin-bottom: 5px;}
+            #parasha-line { font-size: 1.2em; margin-bottom: 5px; }
+            .shabbat-times { font-size: 1em; margin-bottom: 5px; }
+            #weather-line { font-size: 1em; margin-bottom: 10px; }
+            #clock-line { font-size: 2.5em; margin-bottom: 5px; }
+            #gregorian-date { font-size: 0.9em; margin-bottom: 15px; }
+            #info-message { font-size: 1em; margin-bottom: 15px; }
+            .floor { font-size: 4em; }
+            .floor-error { font-size: 2em; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="app-wrapper">
+    <div id="main-container">
         <div class="bsd">בס״ד</div>
         <div class="viewers" title="צופים מחוברים כעת">👁️ <span id="uCount">0</span></div>
         <button id="authBtn" title="אזור מפתחים">🔒</button>
@@ -143,13 +151,9 @@
             </div>
         </div>
 
-        <div class="developer-credit">
-            Developed by Avihai Ofir: <a href="mailto:avihai88@gmail.com">avihai88@gmail.com</a>
-        </div>
-
         <div id="devPanel">
             <h3 style="color: #bb86fc; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">אזור טכני (מצב בדיקות)</h3>
-            <button id="closeDevBtn" style="position:absolute; top:10px; left:10px; background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">✖</button>
+            <button id="closeDevBtn" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer; float: left; margin-top:-45px;">✖</button>
             <div style="margin-bottom: 20px;">
                 <strong style="color: white;">אפשרות 1: הפעלה אקטיבית</strong><br>
                 <label style="display: inline-block; margin-top: 10px; cursor: pointer;">
@@ -159,41 +163,24 @@
             <hr style="border-color: #333; margin: 15px 0;">
             <div>
                 <strong style="color: white;">אפשרות 2: סימולציית זמנים</strong><br>
-                תאריך: <input type="date" id="simDate" style="margin-bottom: 10px;"><br>
-                כניסה: <input type="time" id="simStart"> &nbsp;|&nbsp; 
-                יציאה: <input type="time" id="simEnd"><br>
+                <input type="date" id="simDate"><br>
+                <div style="display:flex; gap:10px;">
+                    <input type="time" id="simStart" placeholder="כניסה">
+                    <input type="time" id="simEnd" placeholder="יציאה">
+                </div>
                 <div style="margin-top: 15px;">
                     <button id="applySimBtn" class="dev-btn">הפעל סימולציה</button>
                     <button id="cancelSimBtn" class="dev-btn dev-btn-danger">בטל וחזור לאמת</button>
                 </div>
             </div>
         </div>
+
+        <div class="developer-credit">
+            Developed by Avihai Ofir: <a href="mailto:avihai88@gmail.com">avihai88@gmail.com</a>
+        </div>
     </div>
 
     <script>
-        // ==========================================
-        // --- מנגנון ה-Zoom האוטומטי ---
-        // ==========================================
-        function resizeApp() {
-            const wrapper = document.getElementById('app-wrapper');
-            // אלו מידות הברזל של העיצוב שלנו
-            const baseWidth = 480;
-            const baseHeight = 820;
-            
-            // בדיקה כמה פעמים הקנבס נכנס במסך הנוכחי (גם לגובה וגם לרוחב)
-            const scaleW = window.innerWidth / baseWidth;
-            const scaleH = window.innerHeight / baseHeight;
-            
-            // לוקחים את הערך הקטן מביניהם כדי למנוע גלישה, ומקטינים ב-2% לשוליים
-            const scale = Math.min(scaleW, scaleH) * 0.98;
-            
-            wrapper.style.transform = `scale(${scale})`;
-        }
-
-        // הפעלת החישוב בטעינה ובכל סיבוב של המסך
-        window.addEventListener('resize', resizeApp);
-        document.addEventListener("DOMContentLoaded", resizeApp);
-
         // ==========================================
         // --- הגדרות משתנים לבניינים ---
         // ==========================================
