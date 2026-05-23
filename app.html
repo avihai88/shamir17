@@ -28,9 +28,37 @@
         .header { margin-bottom: 10px; position: relative; }
         h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.6em; color: #ffffff; }
         #parasha-line { color: #bb86fc; font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
-        #clock-line { font-size: 4em; font-weight: bold; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
         .shabbat-times { color: #aaaaaa; font-size: 1.2em; margin-bottom: 20px; }
         
+        /* אזור מזג האוויר */
+        #weather-widget {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto 20px auto;
+            max-width: 600px;
+            flex-wrap: wrap;
+        }
+        .weather-block {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 65px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .weather-block .time { font-size: 0.95em; color: #bb86fc; font-weight: bold; margin-bottom: 5px; }
+        .weather-block .icon { font-size: 1.5em; margin-bottom: 5px; }
+        .weather-block .temp { font-size: 1.1em; font-weight: bold; color: #ffffff; }
+        .weather-block .desc { font-size: 0.8em; color: #888; margin-top: 3px; }
+
+        /* אזור השעון והתאריך הלועזי */
+        #clock-line { font-size: 4em; font-weight: bold; margin-bottom: 0px; font-variant-numeric: tabular-nums; }
+        #gregorian-date { color: #888; font-size: 1.2em; margin-bottom: 20px; font-weight: 500; }
+
         #info-message { color: #aaaaaa; font-size: 1.2em; margin-bottom: 25px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
 
         #elevator-container { display: flex; justify-content: center; gap: 20px; margin: 0 auto; max-width: 500px; }
@@ -39,12 +67,10 @@
         .title { color: #888; font-size: 1.2em; margin-bottom: 10px; }
         .floor-error { color: #ff4444; font-size: 3em; }
         
-        /* עיצוב הטיימר ובחירת הקומה */
         .timer-display { margin-top: 5px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 45px; display: flex; align-items: center; justify-content: center; direction: ltr;}
         .floor-select-wrap { margin-top: 15px; font-size: 1.1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px;}
         .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 5px 10px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none;}
         
-        /* עיצוב הקרדיט למפתח */
         .developer-credit { margin-top: 50px; margin-bottom: 15px; font-size: 0.85em; color: #666; text-align: center; }
         .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
         .developer-credit a:hover { color: #bb86fc; }
@@ -70,7 +96,16 @@
             h2 { font-size: 1.2em; margin-bottom: 5px; }
             #parasha-line { font-size: 1.1em; margin-bottom: 2px; }
             .shabbat-times { font-size: 0.95em; margin-bottom: 5px; }
-            #clock-line { font-size: 2.2em; margin-bottom: 5px; }
+            
+            /* התאמות מזג אוויר וזמן למסך קטן */
+            #weather-widget { gap: 5px; margin-bottom: 10px; }
+            .weather-block { padding: 5px 8px; min-width: 50px; }
+            .weather-block .icon { font-size: 1.2em; }
+            .weather-block .time { font-size: 0.8em; }
+            .weather-block .temp { font-size: 0.9em; }
+            
+            #clock-line { font-size: 2.2em; margin-bottom: 0px; }
+            #gregorian-date { font-size: 1em; margin-bottom: 10px; }
             #info-message { margin-bottom: 10px; font-size: 1em; min-height: 20px; }
             #elevator-container { gap: 15px; max-width: 700px; } 
             .elevator-box { padding: 10px; }
@@ -91,10 +126,15 @@
     <div class="header">
         <h2>מעליות שבת יצחק שמיר 17</h2>
         <div id="parasha-line">טוען נתונים...</div>
+        
         <div class="shabbat-times">
             כניסה: <span id="start-time">--:--</span> | יציאה: <span id="end-time">--:--</span>
         </div>
+
+        <div id="weather-widget"></div>
+
         <div id="clock-line">--:--:--</div>
+        <div id="gregorian-date">טוען תאריך...</div>
     </div>
 
     <div id="info-message">טוען סטטוס מערכת...</div>
@@ -146,6 +186,38 @@
     </div>
 
     <script>
+        // ==========================================
+        // --- נתוני מזג אוויר לדוגמה ---
+        // ==========================================
+        // כאן תוכל להחליף את הנתונים המדומים בנתונים שמגיעים מה-API שלך
+        const shabbatForecast = [
+            { time: "19:00", title: "כניסה", temp: 23, icon: "☀️" },
+            { time: "23:00", title: "לילה", temp: 19, icon: "🌙" },
+            { time: "03:00", title: "לפנות בוקר", temp: 17, icon: "☁️" },
+            { time: "07:00", title: "בוקר", temp: 20, icon: "🌤️" },
+            { time: "11:00", title: "צהריים", temp: 25, icon: "☀️" },
+            { time: "15:00", title: "אחה''צ", temp: 26, icon: "☀️" },
+            { time: "19:30", title: "יציאה", temp: 22, icon: "🌅" }
+        ];
+
+        function renderShabbatWeather(forecastData) {
+            const container = document.getElementById('weather-widget');
+            let htmlContent = '';
+
+            forecastData.forEach(block => {
+                htmlContent += `
+                    <div class="weather-block">
+                        <span class="time">${block.time}</span>
+                        <span class="icon">${block.icon}</span>
+                        <span class="temp">${block.temp}&deg;C</span>
+                        <span class="desc">${block.title}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = htmlContent;
+        }
+
         // ==========================================
         // --- הגדרות משתנים לבניינים ---
         // ==========================================
@@ -250,7 +322,13 @@
 
         function updateClockAndTimers() {
             const now = new Date();
+            
+            // עדכון השעון
             document.getElementById("clock-line").innerText = now.toLocaleTimeString('he-IL', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit', timeZone:'Asia/Jerusalem'});
+            
+            // עדכון התאריך הלועזי
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('gregorian-date').innerText = now.toLocaleDateString('he-IL', dateOptions);
             
             const rSel = document.getElementById("rightFloorSelect").value;
             const rEl = document.getElementById("rightTimer");
@@ -361,7 +439,6 @@
             const isVisibleWindow = (displayStartTime && shabbatEnd && now >= displayStartTime && now <= shabbatEnd);
             const infoMsg = document.getElementById("info-message");
             
-            // המערכת נשארת מחוברת ל-WebSocket ומזרימה נתונים תמיד, במהלך כל השבוע!
             if (!socket.connected) socket.connect();
 
             if (isVisibleWindow || isOverrideOn) {
@@ -373,7 +450,6 @@
                     infoMsg.style.color = "#00C851";
                 }
             } else {
-                // הודעה מעודכנת לימי חול – המעליות והטיימרים ממשיכים לעבוד כרגיל
                 infoMsg.innerText = `מעליות השבת יפעלו אוטומטית בשבת | התצוגה פעילה למעקב רציף`;
                 infoMsg.style.color = "#aaaaaa";
             }
@@ -414,8 +490,10 @@
             }
         });
 
+        // הפעלות ראשוניות
         initDropdowns();
         fetchShabbatTimes();
+        renderShabbatWeather(shabbatForecast); // הזרקת מזג האוויר בטעינה הראשונית
         setInterval(evaluateSystemState, 20000); 
     </script>
 </body>
