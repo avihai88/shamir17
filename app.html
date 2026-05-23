@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>תוכן המעליות</title>
+    <title>מעליות שבת - יצחק שמיר 17</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; margin: 0; padding: 20px; padding-top: 30px; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }
@@ -25,13 +25,16 @@
         }
         #authBtn:hover { opacity: 0.8; }
 
-        .header { margin-bottom: 20px; position: relative; }
+        .header { margin-bottom: 10px; position: relative; }
         h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.6em; color: #ffffff; }
         #parasha-line { color: #bb86fc; font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
         #clock-line { font-size: 4em; font-weight: bold; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
         .shabbat-times { color: #aaaaaa; font-size: 1.2em; margin-bottom: 20px; }
         
-        #elevator-container { display: none; justify-content: center; gap: 20px; margin: 0 auto; max-width: 500px; }
+        /* הודעת הסטטוס המרכזית שהחליפה את מסך ההמתנה */
+        #info-message { color: #aaaaaa; font-size: 1.2em; margin-bottom: 25px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
+
+        #elevator-container { display: flex; justify-content: center; gap: 20px; margin: 0 auto; max-width: 500px; }
         .elevator-box { background: #1e1e1e; border-radius: 15px; padding: 25px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between; }
         .floor { font-size: 6em; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; }
         .title { color: #888; font-size: 1.2em; margin-bottom: 10px; }
@@ -41,9 +44,6 @@
         .timer-display { margin-top: 5px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 45px; display: flex; align-items: center; justify-content: center; direction: ltr;}
         .floor-select-wrap { margin-top: 15px; font-size: 1.1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px;}
         .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 5px 10px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none;}
-
-        #sync-note { display: none; color: #ffbb33; font-size: 1.1em; margin-top: 15px; font-weight: bold; }
-        #standby-msg { display: block; background: #1a1a1a; padding: 40px; border-radius: 20px; border: 1px solid #333; margin-top: 50px; max-width: 500px; margin-left: auto; margin-right: auto; }
         
         /* עיצוב הקרדיט למפתח */
         .developer-credit { margin-top: 50px; margin-bottom: 15px; font-size: 0.85em; color: #666; text-align: center; }
@@ -72,11 +72,11 @@
             #parasha-line { font-size: 1.1em; margin-bottom: 2px; }
             .shabbat-times { font-size: 0.95em; margin-bottom: 5px; }
             #clock-line { font-size: 2.2em; margin-bottom: 5px; }
+            #info-message { margin-bottom: 10px; font-size: 1em; min-height: 20px; }
             #elevator-container { gap: 15px; max-width: 700px; } 
             .elevator-box { padding: 10px; }
             .floor { font-size: 3.5em; }
             .floor-error { font-size: 2.5em; }
-            #standby-msg { padding: 20px; margin-top: 10px; }
             .floor-select-wrap { margin-top: 10px; padding-top: 10px; font-size: 0.9em; }
             .timer-display { min-height: 35px; }
             .developer-credit { margin-top: 20px; font-size: 0.75em; }
@@ -98,10 +98,7 @@
         <div id="clock-line">--:--:--</div>
     </div>
 
-    <div id="standby-msg">
-        <h2 style="color: #00C851;">המערכת מוכנה לשבת</h2>
-        <p style="color: #888;">תצוגת המעליות תופעל אוטומטית לקראת שבת.</p>
-    </div>
+    <div id="info-message">טוען סטטוס מערכת...</div>
 
     <div id="elevator-container">
         <div class="elevator-box">
@@ -123,8 +120,6 @@
             </div>
         </div>
     </div>
-    
-    <div id="sync-note"></div>
 
     <div class="developer-credit">
         Developed by Avihai: <a href="mailto:avihai88@gmail.com">avihai88@gmail.com</a>
@@ -152,15 +147,13 @@
     </div>
 
     <script>
-        // --- התחברות לשרת המתווך (WebSockets) ---
-        // החלף את הכתובת בשורה הזו לכתובת של השרת שיצרת ב-Render.com
-        const socket = io("https://shamir17.onrender.com", { autoConnect: false }); 
-
         // ==========================================
         // --- הגדרות משתנים לבניינים ---
         // ==========================================
-        const MINUTES_BEFORE_START = 20;   
-        const SYNC_INFO_MINUTES = 15;     
+        const BUILDING_ID = "shamir17"; 
+
+        const MINUTES_BEFORE_START = 10;   
+        const SYNC_INFO_MINUTES = 15; // כמות הדקות להצגה בהודעה האוטומטית
         const SAFETY_REFRESH_OFFSET = 1; 
 
         // הגדרות קומות וטיימרים אישיים
@@ -170,6 +163,13 @@
 
         const RIGHT_FLOORS_MODE = "odd";  
         const LEFT_FLOORS_MODE = "even";  
+
+        // --- התחברות לשרת המתווך (WebSockets) ---
+        const socket = io("https://shamir17.onrender.com", { autoConnect: false }); 
+        
+        socket.on('connect', () => {
+            socket.emit('join_building', BUILDING_ID);
+        });
 
         let shabbatStart = null, shabbatEnd = null;
         let isSimulationActive = false; 
@@ -295,7 +295,11 @@
             try {
                 let targetDate = new Date();
                 targetDate.setDate(targetDate.getDate() + daysOffset);
-                const url = `https://www.hebcal.com/shabbat?cfg=json&geonameid=294998&b=18&M=on&gy=${targetDate.getFullYear()}&gm=${targetDate.getMonth()+1}&gd=${targetDate.getDate()}`;
+                
+                let sunday = new Date(targetDate);
+                sunday.setDate(sunday.getDate() - sunday.getDay()); 
+                
+                const url = `https://www.hebcal.com/shabbat?cfg=json&geonameid=294998&b=18&M=on&gy=${sunday.getFullYear()}&gm=${sunday.getMonth()+1}&gd=${sunday.getDate()}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 
@@ -319,7 +323,10 @@
                     }
                 }
 
-                if (shabbatEnd && new Date() > shabbatEnd) { fetchShabbatTimes(1); return; }
+                if (shabbatEnd && new Date() > shabbatEnd) { 
+                    fetchShabbatTimes(daysOffset + 7); 
+                    return; 
+                }
                 
                 let displayTitleArr = [];
                 if (holidayName) displayTitleArr.push(holidayName);
@@ -353,25 +360,30 @@
             }
 
             const isVisibleWindow = (displayStartTime && shabbatEnd && now >= displayStartTime && now <= shabbatEnd);
+            const infoMsg = document.getElementById("info-message");
             
             if (isVisibleWindow || isOverrideOn) {
-                document.getElementById("standby-msg").style.display = "none";
-                document.getElementById("elevator-container").style.display = "flex";
-                const syncNote = document.getElementById("sync-note");
-                
+                // חלון פעילות אקטיבי (שבת/חג או עקיפת מפתח)
                 if (shabbatStart && now < shabbatStart && !isOverrideOn) {
-                    syncNote.innerText = `שימו לב: מצב המעליות העדכני יחל כ-${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת`;
-                    syncNote.style.display = "block";
-                } else syncNote.style.display = "none";
+                    infoMsg.innerText = `שימו לב: מצב המעליות העדכני יחל כ-${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת`;
+                    infoMsg.style.color = "#ffbb33";
+                } else {
+                    infoMsg.innerText = "● מערכת מעליות שבת פעילה בזמן אמת";
+                    infoMsg.style.color = "#00C851";
+                }
                 
-                // התחברות לשרת שלנו רק כשהחלון פתוח (חוסך משאבים לשרת)
                 if (!socket.connected) socket.connect();
             } else {
-                document.getElementById("standby-msg").style.display = "block";
-                document.getElementById("elevator-container").style.display = "none";
-                document.getElementById("sync-note").style.display = "none";
+                // ימי חול / מצב המתנה - המעליות מוצגות עם המלל המבוקש
+                infoMsg.innerText = `מעליות השבת יפעלו ${SYNC_INFO_MINUTES} דקות לאחר הדלקת נרות`;
+                infoMsg.style.color = "#aaaaaa";
                 
-                // התנתקות מהשרת כשהשבת יוצאת
+                // איפוס תצוגת קומות לסטטוס ריק ביום חול
+                if (!socket.connected) {
+                    document.getElementById("leftFloor").innerText = "--";
+                    document.getElementById("rightFloor").innerText = "--";
+                }
+
                 if (socket.connected) socket.disconnect();
             }
         }
