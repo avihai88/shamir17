@@ -6,81 +6,84 @@
     <title>מעליות שבת - יצחק שמיר 17</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { background-color: #121212; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; margin: 0; padding: 20px; padding-top: 30px; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }
+        /* איפוס גלילה והגדרת גובה המסך ל-100% כדי למנוע גלישה */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         
-        .bsd { position: absolute; top: 15px; right: 15px; font-size: 0.85em; color: #888; z-index: 1000; }
-        .viewers { position: absolute; top: 18px; left: 55px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
+        body { 
+            background-color: #121212; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            text-align: center; 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        
+        .bsd { position: absolute; top: 10px; right: 15px; font-size: 0.85em; color: #888; z-index: 1000; }
+        .viewers { position: absolute; top: 10px; left: 55px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
 
         #authBtn {
-            position: absolute;
-            top: 10px; 
-            left: 15px;
-            background: none;
-            border: none;
-            font-size: 1.8em; 
-            cursor: pointer;
-            opacity: 0.3; 
-            transition: opacity 0.3s;
-            z-index: 1000;
+            position: absolute; top: 5px; left: 15px; background: none; border: none;
+            font-size: 1.5em; cursor: pointer; opacity: 0.3; transition: opacity 0.3s; z-index: 1000;
         }
         #authBtn:hover { opacity: 0.8; }
 
-        .header { margin-bottom: 10px; position: relative; }
-        h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.6em; color: #ffffff; }
-        #parasha-line { color: #bb86fc; font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
-        .shabbat-times { color: #aaaaaa; font-size: 1.2em; margin-bottom: 20px; }
+        /* כיווץ אזור ההדר כדי שישאיר מקום למעליות */
+        .header { margin-bottom: 5px; flex-shrink: 0; }
+        h2 { margin-top: 10px; margin-bottom: 5px; font-size: 1.4em; color: #ffffff; }
+        #parasha-line { color: #bb86fc; font-size: 1.3em; font-weight: bold; margin-bottom: 5px; }
+        .shabbat-times { color: #aaaaaa; font-size: 1.1em; margin-bottom: 10px; }
         
-        /* אזור מזג האוויר */
-        #weather-widget {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 0 auto 20px auto;
-            max-width: 600px;
-            flex-wrap: wrap;
+        #weather-line { color: #4dd0e1; font-size: 1.1em; font-weight: bold; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .weather-temp { color: #ffffff; direction: ltr; margin-right: 5px; }
+
+        #clock-line { font-size: 3.2em; font-weight: bold; margin-bottom: 0px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+        #gregorian-date { color: #888; font-size: 1em; margin-bottom: 10px; font-weight: 500; }
+
+        #info-message { color: #aaaaaa; font-size: 1.1em; margin-bottom: 10px; font-weight: bold; min-height: 24px; transition: color 0.3s; flex-shrink: 0; }
+
+        /* אזור המעליות תופס את שאר המקום הגמיש */
+        #elevator-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin: 0 auto; 
+            max-width: 600px; 
+            width: 100%;
+            flex-grow: 1; /* לוקח את כל המקום הנותר במסך */
+            min-height: 0; /* מונע פריצה מגבולות המסך */
         }
-        .weather-block {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 10px 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 65px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        
+        .elevator-box { 
+            background: #1e1e1e; 
+            border-radius: 12px; 
+            padding: 15px; 
+            flex: 1; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-evenly; /* מפזר את התוכן באחידות */
         }
-        .weather-block .time { font-size: 0.95em; color: #bb86fc; font-weight: bold; margin-bottom: 5px; }
-        .weather-block .icon { font-size: 1.5em; margin-bottom: 5px; }
-        .weather-block .temp { font-size: 1.1em; font-weight: bold; color: #ffffff; }
-        .weather-block .desc { font-size: 0.8em; color: #888; margin-top: 3px; }
-
-        /* אזור השעון והתאריך הלועזי */
-        #clock-line { font-size: 4em; font-weight: bold; margin-bottom: 0px; font-variant-numeric: tabular-nums; }
-        #gregorian-date { color: #888; font-size: 1.2em; margin-bottom: 20px; font-weight: 500; }
-
-        #info-message { color: #aaaaaa; font-size: 1.2em; margin-bottom: 25px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
-
-        #elevator-container { display: flex; justify-content: center; gap: 20px; margin: 0 auto; max-width: 500px; }
-        .elevator-box { background: #1e1e1e; border-radius: 15px; padding: 25px; flex: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between; }
-        .floor { font-size: 6em; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; }
-        .title { color: #888; font-size: 1.2em; margin-bottom: 10px; }
-        .floor-error { color: #ff4444; font-size: 3em; }
         
-        .timer-display { margin-top: 5px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 45px; display: flex; align-items: center; justify-content: center; direction: ltr;}
-        .floor-select-wrap { margin-top: 15px; font-size: 1.1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px;}
-        .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 5px 10px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none;}
+        .title { color: #888; font-size: 1.1em; margin-bottom: 5px; }
+        .floor { font-size: 5.5em; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; line-height: 1; margin: 0;}
+        .floor-error { color: #ff4444; font-size: 2.5em; }
         
-        .developer-credit { margin-top: 50px; margin-bottom: 15px; font-size: 0.85em; color: #666; text-align: center; }
+        .timer-display { margin-top: 5px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 40px; display: flex; align-items: center; justify-content: center; direction: ltr;}
+        .floor-select-wrap { font-size: 1em; color: #aaa; border-top: 1px solid #333; padding-top: 10px; margin-top: 5px;}
+        .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 4px 8px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none;}
+        
+        .developer-credit { margin-top: 10px; font-size: 0.8em; color: #666; text-align: center; flex-shrink: 0; padding-bottom: 5px;}
         .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
         .developer-credit a:hover { color: #bb86fc; }
 
+        /* חלונית המפתחים (מופיעה כפופ-אפ מעל המסך כדי לא לפגוע בעיצוב) */
         #devPanel { 
-            display: none; 
-            margin-top: 50px; padding: 20px; background: #1a1a1a; 
-            border-radius: 10px; border: 1px solid #333; color: #aaaaaa; 
-            font-size: 0.9em; text-align: right; max-width: 500px; 
-            margin-left: auto; margin-right: auto; margin-bottom: 50px; 
+            display: none; position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+            padding: 20px; background: rgba(26,26,26,0.95); border-radius: 10px; border: 1px solid #555; 
+            color: #aaaaaa; font-size: 0.9em; text-align: right; width: 90%; max-width: 400px; 
+            z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
         }
         #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; }
         .dev-btn { background: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
@@ -88,32 +91,22 @@
         .dev-btn-danger { background: #cf6679; color: #000; }
         .dev-btn-danger:hover { background: #ff7597; }
 
-        @media (max-height: 500px) and (orientation: landscape) {
-            body { padding: 5px 15px; padding-top: 20px; }
-            .bsd { top: 5px; right: 10px; font-size: 0.75em; }
-            #authBtn { top: 5px; left: 10px; font-size: 1.5em; }
-            .viewers { top: 13px; left: 45px; font-size: 0.8em; }
-            h2 { font-size: 1.2em; margin-bottom: 5px; }
+        /* התאמות למסכים רחבים/שוכבים (טאבלטים לרוחב) */
+        @media (max-height: 600px) and (orientation: landscape) {
+            h2 { font-size: 1.2em; margin-top: 5px; margin-bottom: 2px;}
             #parasha-line { font-size: 1.1em; margin-bottom: 2px; }
-            .shabbat-times { font-size: 0.95em; margin-bottom: 5px; }
-            
-            /* התאמות מזג אוויר וזמן למסך קטן */
-            #weather-widget { gap: 5px; margin-bottom: 10px; }
-            .weather-block { padding: 5px 8px; min-width: 50px; }
-            .weather-block .icon { font-size: 1.2em; }
-            .weather-block .time { font-size: 0.8em; }
-            .weather-block .temp { font-size: 0.9em; }
-            
+            .shabbat-times { font-size: 0.95em; margin-bottom: 2px; }
+            #weather-line { font-size: 1em; margin-bottom: 2px; }
             #clock-line { font-size: 2.2em; margin-bottom: 0px; }
-            #gregorian-date { font-size: 1em; margin-bottom: 10px; }
-            #info-message { margin-bottom: 10px; font-size: 1em; min-height: 20px; }
+            #gregorian-date { font-size: 0.9em; margin-bottom: 5px; }
+            #info-message { font-size: 1em; margin-bottom: 5px; min-height: 20px; }
             #elevator-container { gap: 15px; max-width: 700px; } 
-            .elevator-box { padding: 10px; }
+            .elevator-box { padding: 10px; justify-content: center;}
             .floor { font-size: 3.5em; }
-            .floor-error { font-size: 2.5em; }
-            .floor-select-wrap { margin-top: 10px; padding-top: 10px; font-size: 0.9em; }
-            .timer-display { min-height: 35px; }
-            .developer-credit { margin-top: 20px; font-size: 0.75em; }
+            .floor-error { font-size: 2em; }
+            .timer-display { min-height: 30px; font-size: 0.9em;}
+            .floor-select-wrap { margin-top: 5px; padding-top: 5px; font-size: 0.85em; }
+            .developer-credit { margin-top: 5px; font-size: 0.7em; }
         }
     </style>
 </head>
@@ -131,7 +124,7 @@
             כניסה: <span id="start-time">--:--</span> | יציאה: <span id="end-time">--:--</span>
         </div>
 
-        <div id="weather-widget"></div>
+        <div id="weather-line">מחשב מזג אוויר...</div>
 
         <div id="clock-line">--:--:--</div>
         <div id="gregorian-date">טוען תאריך...</div>
@@ -166,6 +159,7 @@
 
     <div id="devPanel">
         <h3 style="color: #bb86fc; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">אזור טכני (מצב בדיקות)</h3>
+        <button id="closeDevBtn" style="position:absolute; top:10px; left:10px; background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">✖</button>
         <div style="margin-bottom: 20px;">
             <strong style="color: white;">אפשרות 1: הפעלה אקטיבית</strong><br>
             <label style="display: inline-block; margin-top: 10px; cursor: pointer;">
@@ -186,38 +180,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // --- נתוני מזג אוויר לדוגמה ---
-        // ==========================================
-        // כאן תוכל להחליף את הנתונים המדומים בנתונים שמגיעים מה-API שלך
-        const shabbatForecast = [
-            { time: "19:00", title: "כניסה", temp: 23, icon: "☀️" },
-            { time: "23:00", title: "לילה", temp: 19, icon: "🌙" },
-            { time: "03:00", title: "לפנות בוקר", temp: 17, icon: "☁️" },
-            { time: "07:00", title: "בוקר", temp: 20, icon: "🌤️" },
-            { time: "11:00", title: "צהריים", temp: 25, icon: "☀️" },
-            { time: "15:00", title: "אחה''צ", temp: 26, icon: "☀️" },
-            { time: "19:30", title: "יציאה", temp: 22, icon: "🌅" }
-        ];
-
-        function renderShabbatWeather(forecastData) {
-            const container = document.getElementById('weather-widget');
-            let htmlContent = '';
-
-            forecastData.forEach(block => {
-                htmlContent += `
-                    <div class="weather-block">
-                        <span class="time">${block.time}</span>
-                        <span class="icon">${block.icon}</span>
-                        <span class="temp">${block.temp}&deg;C</span>
-                        <span class="desc">${block.title}</span>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = htmlContent;
-        }
-
         // ==========================================
         // --- הגדרות משתנים לבניינים ---
         // ==========================================
@@ -285,10 +247,12 @@
         authBtn.addEventListener('click', () => {
             const pass = prompt("נא להזין סיסמת מפתח:");
             if (pass === "0504300227") {
-                authBtn.style.display = "none";
                 devPanel.style.display = "block";
-                setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
             } else if (pass !== null) alert("סיסמה שגויה");
+        });
+        
+        document.getElementById("closeDevBtn").addEventListener('click', () => {
+            devPanel.style.display = "none";
         });
 
         const overrideCheckbox = document.getElementById("overrideToggle");
@@ -310,6 +274,7 @@
             document.getElementById("parasha-line").innerText = "מצב סימולציה פעיל";
             document.getElementById("parasha-line").style.color = "#ffbb33";
             evaluateSystemState();
+            devPanel.style.display = "none";
             alert("הסימולציה הופעלה");
         });
 
@@ -317,16 +282,14 @@
             isSimulationActive = false;
             document.getElementById("parasha-line").style.color = "#bb86fc";
             fetchShabbatTimes(); 
+            devPanel.style.display = "none";
             alert("הסימולציה בוטלה");
         });
 
         function updateClockAndTimers() {
             const now = new Date();
             
-            // עדכון השעון
             document.getElementById("clock-line").innerText = now.toLocaleTimeString('he-IL', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit', timeZone:'Asia/Jerusalem'});
-            
-            // עדכון התאריך הלועזי
             const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('gregorian-date').innerText = now.toLocaleDateString('he-IL', dateOptions);
             
@@ -366,6 +329,44 @@
         }
         setInterval(updateClockAndTimers, 1000);
         updateClockAndTimers();
+
+        async function fetchWeather() {
+            try {
+                // משיכת הנתונים לאזור המרכז מגבעת שמואל (Open-Meteo)
+                const lat = 32.078;
+                const lon = 34.847;
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FJerusalem`;
+                
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                const today = new Date();
+                let daysUntilSaturday = (6 - today.getDay() + 7) % 7; 
+                if (today.getDay() === 6) daysUntilSaturday = 0; 
+                
+                const maxTemp = Math.round(data.daily.temperature_2m_max[daysUntilSaturday]);
+                const minTemp = Math.round(data.daily.temperature_2m_min[daysUntilSaturday]);
+                const code = data.daily.weathercode[daysUntilSaturday];
+                
+                let icon = "🌤️";
+                let desc = "מעונן חלקי";
+                
+                if (code === 0) { icon = "☀️"; desc = "בהיר"; }
+                else if (code === 1 || code === 2) { icon = "🌤️"; desc = "מעונן חלקי"; }
+                else if (code === 3) { icon = "☁️"; desc = "מעונן"; }
+                else if (code >= 45 && code <= 48) { icon = "🌫️"; desc = "ערפילי"; }
+                else if (code >= 51 && code <= 67) { icon = "🌧️"; desc = "גשום"; }
+                else if (code >= 71 && code <= 77) { icon = "❄️"; desc = "שלג"; }
+                else if (code >= 80 && code <= 82) { icon = "🌦️"; desc = "ממטרים"; }
+                else if (code >= 95) { icon = "⛈️"; desc = "סופות רעמים"; }
+
+                document.getElementById("weather-line").innerHTML = 
+                    `<span title="${desc}">${icon}</span> לשבת: <span class="weather-temp">${maxTemp}°C / ${minTemp}°C</span>`;
+
+            } catch (e) {
+                document.getElementById("weather-line").innerHTML = "🌤️ שגיאה בטעינת תחזית";
+            }
+        }
 
         async function fetchShabbatTimes(daysOffset = 0) {
             if (isSimulationActive) return; 
@@ -490,10 +491,10 @@
             }
         });
 
-        // הפעלות ראשוניות
         initDropdowns();
         fetchShabbatTimes();
-        renderShabbatWeather(shabbatForecast); // הזרקת מזג האוויר בטעינה הראשונית
+        fetchWeather();
+        setInterval(fetchWeather, 3 * 60 * 60 * 1000); // רענון מזג אוויר כל 3 שעות
         setInterval(evaluateSystemState, 20000); 
     </script>
 </body>
