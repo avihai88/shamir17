@@ -31,7 +31,6 @@
         #clock-line { font-size: 4em; font-weight: bold; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
         .shabbat-times { color: #aaaaaa; font-size: 1.2em; margin-bottom: 20px; }
         
-        /* הודעת הסטטוס המרכזית שהחליפה את מסך ההמתנה */
         #info-message { color: #aaaaaa; font-size: 1.2em; margin-bottom: 25px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
 
         #elevator-container { display: flex; justify-content: center; gap: 20px; margin: 0 auto; max-width: 500px; }
@@ -153,7 +152,7 @@
         const BUILDING_ID = "shamir17"; 
 
         const MINUTES_BEFORE_START = 10;   
-        const SYNC_INFO_MINUTES = 15; // כמות הדקות להצגה בהודעה האוטומטית
+        const SYNC_INFO_MINUTES = 15; 
         const SAFETY_REFRESH_OFFSET = 1; 
 
         // הגדרות קומות וטיימרים אישיים
@@ -362,8 +361,10 @@
             const isVisibleWindow = (displayStartTime && shabbatEnd && now >= displayStartTime && now <= shabbatEnd);
             const infoMsg = document.getElementById("info-message");
             
+            // המערכת נשארת מחוברת ל-WebSocket ומזרימה נתונים תמיד, במהלך כל השבוע!
+            if (!socket.connected) socket.connect();
+
             if (isVisibleWindow || isOverrideOn) {
-                // חלון פעילות אקטיבי (שבת/חג או עקיפת מפתח)
                 if (shabbatStart && now < shabbatStart && !isOverrideOn) {
                     infoMsg.innerText = `שימו לב: מצב המעליות העדכני יחל כ-${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת`;
                     infoMsg.style.color = "#ffbb33";
@@ -371,20 +372,10 @@
                     infoMsg.innerText = "● מערכת מעליות שבת פעילה בזמן אמת";
                     infoMsg.style.color = "#00C851";
                 }
-                
-                if (!socket.connected) socket.connect();
             } else {
-                // ימי חול / מצב המתנה - המעליות מוצגות עם המלל המבוקש
-                infoMsg.innerText = `מעליות השבת יפעלו ${SYNC_INFO_MINUTES} דקות לאחר הדלקת נרות`;
+                // הודעה מעודכנת לימי חול – המעליות והטיימרים ממשיכים לעבוד כרגיל
+                infoMsg.innerText = `מעליות השבת יפעלו אוטומטית בשבת | התצוגה פעילה למעקב רציף`;
                 infoMsg.style.color = "#aaaaaa";
-                
-                // איפוס תצוגת קומות לסטטוס ריק ביום חול
-                if (!socket.connected) {
-                    document.getElementById("leftFloor").innerText = "--";
-                    document.getElementById("rightFloor").innerText = "--";
-                }
-
-                if (socket.connected) socket.disconnect();
             }
         }
 
