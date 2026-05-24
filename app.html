@@ -43,9 +43,24 @@
         #authBtn:hover { opacity: 0.8; }
 
         .header { margin-bottom: 15px; }
-        h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.5em; color: #ffffff; }
-        #parasha-line { color: #bb86fc; font-size: 1.3em; font-weight: bold; margin-bottom: 8px; }
-        .shabbat-times { color: #aaaaaa; font-size: 1.1em; margin-bottom: 10px; }
+        h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #ffffff; }
+        
+        /* השורה המאוחדת החדשה של הפרשה והזמנים */
+        #combined-info-line { 
+            color: #aaaaaa; 
+            font-size: 1.2em; 
+            margin-bottom: 10px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%;
+        }
+        .parasha-text { 
+            color: #bb86fc; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            margin-left: 5px; 
+        }
         
         #weather-line { color: #4dd0e1; font-size: 1.1em; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .weather-temp { color: #ffffff; direction: ltr; margin-right: 5px; }
@@ -133,8 +148,8 @@
         @media (orientation: landscape) and (max-height: 650px) {
             body { padding: 5px 10px; }
             h2 { font-size: 1.3em; margin-bottom: 5px; }
-            #parasha-line { font-size: 1.1em; margin-bottom: 5px; }
-            .shabbat-times, #weather-line { font-size: 0.95em; margin-bottom: 5px; }
+            #combined-info-line { font-size: 1.05em; margin-bottom: 5px; }
+            #weather-line { font-size: 0.95em; margin-bottom: 5px; }
             #clock-line { font-size: 2.8em; }
             #gregorian-date { margin-bottom: 10px; font-size: 0.9em; }
             #info-message { font-size: 0.85em; margin-bottom: 10px; }
@@ -158,11 +173,8 @@
 
         <div class="header">
             <h2>מעליות שבת יצחק שמיר 17</h2>
-            <div id="parasha-line">טוען נתונים...</div>
             
-            <div class="shabbat-times">
-                כניסה: <span id="start-time">--:--</span> | יציאה: <span id="end-time">--:--</span>
-            </div>
+            <div id="combined-info-line">טוען נתונים...</div>
 
             <div id="weather-line">מחשב מזג אוויר...</div>
 
@@ -315,10 +327,12 @@
             shabbatEnd = new Date(`${d}T${e}:00`);
             isSimulationActive = true;
             const opt = {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Jerusalem'};
-            document.getElementById("start-time").innerText = shabbatStart.toLocaleTimeString('he-IL', opt) + " (סימו')";
-            document.getElementById("end-time").innerText = shabbatEnd.toLocaleTimeString('he-IL', opt) + " (סימו')";
-            document.getElementById("parasha-line").innerText = "מצב סימולציה פעיל";
-            document.getElementById("parasha-line").style.color = "#ffbb33";
+            const startStr = shabbatStart.toLocaleTimeString('he-IL', opt);
+            const endStr = shabbatEnd.toLocaleTimeString('he-IL', opt);
+            
+            // עדכון השורה המאוחדת למצב סימולציה
+            document.getElementById("combined-info-line").innerHTML = `<span class="parasha-text" style="color:#ffbb33;">מצב סימולציה</span> &nbsp;|&nbsp; כניסה: ${startStr} &nbsp;|&nbsp; יציאה: ${endStr}`;
+            
             evaluateSystemState();
             devPanel.style.display = "none";
             alert("הסימולציה הופעלה");
@@ -326,7 +340,7 @@
 
         document.getElementById("cancelSimBtn").addEventListener('click', () => {
             isSimulationActive = false;
-            document.getElementById("parasha-line").style.color = "#bb86fc";
+            document.getElementById("combined-info-line").innerHTML = "טוען נתונים...";
             fetchShabbatTimes(); 
             devPanel.style.display = "none";
             alert("הסימולציה בוטלה");
@@ -453,14 +467,17 @@
                 if (holidayName) displayTitleArr.push(holidayName);
                 if (parashaName) displayTitleArr.push(parashaName);
                 
-                document.getElementById("parasha-line").innerText = displayTitleArr.length > 0 ? displayTitleArr.join(" | ") : "שבת קודש";
-                
+                let parashaText = displayTitleArr.length > 0 ? displayTitleArr.join(" | ") : "שבת קודש";
                 const opt = {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Jerusalem'};
-                if (shabbatStart) document.getElementById("start-time").innerText = shabbatStart.toLocaleTimeString('he-IL', opt);
-                if (shabbatEnd) document.getElementById("end-time").innerText = shabbatEnd.toLocaleTimeString('he-IL', opt);
+                let startStr = shabbatStart ? shabbatStart.toLocaleTimeString('he-IL', opt) : "--:--";
+                let endStr = shabbatEnd ? shabbatEnd.toLocaleTimeString('he-IL', opt) : "--:--";
+                
+                // הזרקת המידע המאוחד לשורה אחת
+                document.getElementById("combined-info-line").innerHTML = 
+                    `<span class="parasha-text">${parashaText}</span> &nbsp;|&nbsp; כניסה: ${startStr} &nbsp;|&nbsp; יציאה: ${endStr}`;
                 
                 evaluateSystemState();
-            } catch (e) { document.getElementById("parasha-line").innerText = "שגיאת נתונים"; }
+            } catch (e) { document.getElementById("combined-info-line").innerText = "שגיאת נתונים"; }
         }
 
         function evaluateSystemState() {
@@ -498,6 +515,8 @@
                 infoMsg.style.color = "#aaaaaa";
             }
         }
+
+        
 
         // --- האזנה לאירועים מהשרת ---
         socket.on('viewers_count', (count) => {
