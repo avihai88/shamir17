@@ -101,7 +101,7 @@
             align-items: center; 
         }
         
-        .title { color: #888; font-size: 1.1em; margin-bottom: 10px; }
+        .title { color: #888; font-size: 1.1em; margin-bottom: 20px; margin-top: -10px; }
         
         /* גובה קבוע לקומה כדי למנוע קפיצות בין מספרים לשגיאות */
         .floor-wrapper { height: 1.2em; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
@@ -112,7 +112,7 @@
         .timer-display { 
             height: 55px; 
             width: 100%;
-            margin-top: 25px; 
+            margin-top: 15px; 
             font-weight: bold; 
             font-variant-numeric: tabular-nums; 
             transition: color 0.3s; 
@@ -514,8 +514,8 @@
             } else {
                 const isDataFresh = (now.getTime() - lastUpdateTime) < (3 * 60 * 1000);
                 const statusText = isDataFresh ? 
-                    '<span style="color:#00C851">מיקום מעליות פעיל</span>' : 
-                    '<span style="color:#ff9800">מיקום מעליות לא פעיל</span>';
+                    '<span style="color:#00C851">מיקום המעליות פעיל</span>' : 
+                    '<span style="color:#ff9800">מיקום המעליות לא פעיל</span>';
                 
                 infoMsg.innerHTML = `מעליות השבת יכנסו לפעולה ${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת | ${statusText}`;
                 infoMsg.style.color = "#aaaaaa";
