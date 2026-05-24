@@ -264,6 +264,7 @@
 
         let shabbatStart = null, shabbatEnd = null;
         let isSimulationActive = false; 
+        let lastUpdateTime = Date.now();
 
         let rightLastFloor = null;
         let leftLastFloor = null;
@@ -511,12 +512,15 @@
                     infoMsg.style.color = "#00C851";
                 }
             } else {
-                infoMsg.innerText = `מעליות השבת יפעלו אוטומטית בשבת | התצוגה פעילה למעקב רציף`;
+                const isDataFresh = (now.getTime() - lastUpdateTime) < (3 * 60 * 1000);
+                const statusText = isDataFresh ? 
+                    '<span style="color:#00C851">מיקום מעליות פעיל</span>' : 
+                    '<span style="color:#ff9800">מיקום מעליות לא פעיל</span>';
+                
+                infoMsg.innerHTML = `מעליות השבת יכנסו לפעולה ${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת | ${statusText}`;
                 infoMsg.style.color = "#aaaaaa";
             }
         }
-
-        
 
         // --- האזנה לאירועים מהשרת ---
         socket.on('viewers_count', (count) => {
@@ -524,6 +528,7 @@
         });
 
         socket.on('elevator_update', (data) => {
+            lastUpdateTime = Date.now();
             const payload = data.floor;
             let val = (payload === "-99") ? "תקלה" : (payload === "-1") ? "⬇️" : (payload === "-2") ? "⬆️" : payload;
             
@@ -565,7 +570,7 @@
         fetchShabbatTimes();
         fetchWeather();
         setInterval(fetchWeather, 3 * 60 * 60 * 1000); 
-        setInterval(evaluateSystemState, 20000); 
+        setInterval(evaluateSystemState, 5000); 
     </script>
 </body>
 </html>
