@@ -2,112 +2,153 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>מעליות שבת - יצחק שמיר 17</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        /* איפוס האתר, מאפשר גלילה חלקה, ושומר שהתוכן ימורכז אנכית אם יש מקום במסך */
-        body { 
-            background-color: #121212; 
-            color: #ffffff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 2vh 10px; 
-            box-sizing: border-box; 
-            min-height: 100vh;
+        /* חסימה מוחלטת של גלילה - המערכת מתנהגת כמו אפליקציה סגורה */
+        html, body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
             display: flex;
-            flex-direction: column;
-            overflow-y: auto; 
-            overflow-x: hidden;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; 
         }
 
-        /* הקונטיינר המרכזי ששומר על הפרופורציה המקורית ולא נמתח לרוחב מחשב */
-        #main-container {
+        /* "קופסת הקסם" - מחושבת מתמטית לשמור על יחס 9:16 בכל מסך מבלי לחרוג לעולם */
+        #app-container {
             width: 100%;
-            max-width: 500px;
-            margin: auto; /* ממורכז אנכית ואופקית */
+            height: 100%;
+            max-width: min(500px, calc(100dvh * (9 / 16)));
+            max-height: min(888px, calc(100vw * (16 / 9)));
             position: relative;
-            padding-top: 35px; /* מפנה מקום לכפתורים העליונים */
             display: flex;
             flex-direction: column;
+            padding: 4cqw;
+            box-sizing: border-box;
+            container-type: inline-size; /* מגדיר את הקופסה כיחידת מידה */
         }
-        
-        .bsd { position: absolute; top: 0; right: 10px; font-size: 0.85em; color: #888; z-index: 1000; }
-        .viewers { position: absolute; top: 0; left: 45px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
 
-        #authBtn {
-            position: absolute; top: -5px; left: 5px; background: none; border: none;
-            font-size: 1.6em; cursor: pointer; opacity: 0.3; transition: opacity 0.3s; z-index: 1000;
-        }
+        /* כל המידות (cqw) הן נגזרת מדויקת של הקופסה, כך שהפרופורציה נשמרת תמיד */
+        .bsd { position: absolute; top: 2cqw; right: 4cqw; font-size: 3.5cqw; color: #888; z-index: 1000; }
+        .viewers { position: absolute; top: 2.5cqw; left: 12cqw; font-size: 3.5cqw; color: #00C851; z-index: 1000; font-weight: bold; }
+        
+        #authBtn { position: absolute; top: 1.5cqw; left: 2cqw; background: none; border: none; font-size: 5cqw; cursor: pointer; opacity: 0.3; transition: opacity 0.3s; z-index: 1000; padding: 0; margin: 0; }
         #authBtn:hover { opacity: 0.8; }
 
-        /* כותרות וזמנים עם Clamp שמתכווץ כשהמסך פצפון (vmin) ונעצר בגודל המקורי */
-        h2 { margin-top: 0; margin-bottom: 15px; font-size: clamp(1.2em, 5vmin, 1.6em); color: #ffffff; }
-        #parasha-line { color: #bb86fc; font-size: clamp(1.2em, 4.5vmin, 1.5em); font-weight: bold; margin-bottom: 10px; }
-        .shabbat-times { color: #aaaaaa; font-size: clamp(1em, 3.5vmin, 1.2em); margin-bottom: 15px; }
+        .header { margin-top: 6cqw; flex-shrink: 0; }
+        h2 { margin: 0 0 2cqw 0; font-size: 6.5cqw; }
+        #parasha-line { color: #bb86fc; font-size: 5.5cqw; font-weight: bold; margin-bottom: 2cqw; }
+        .shabbat-times { color: #aaaaaa; font-size: 4cqw; margin-bottom: 2cqw; }
         
-        #weather-line { color: #4dd0e1; font-size: clamp(1em, 3.5vmin, 1.2em); font-weight: bold; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .weather-temp { color: #ffffff; direction: ltr; margin-right: 5px; }
+        #weather-line { color: #4dd0e1; font-size: 4cqw; font-weight: bold; margin-bottom: 2cqw; display: flex; justify-content: center; align-items: center; gap: 1cqw; }
+        .weather-temp { direction: ltr; margin-right: 1cqw; }
         
-        #clock-line { font-size: clamp(2.5em, 12vmin, 4em); font-weight: bold; margin-bottom: 5px; font-variant-numeric: tabular-nums; line-height: 1; }
-        #gregorian-date { color: #888; font-size: clamp(0.9em, 3vmin, 1.1em); margin-bottom: 25px; font-weight: 500; }
+        #clock-line { font-size: 16cqw; font-weight: bold; margin-bottom: 0; line-height: 1; font-variant-numeric: tabular-nums; }
+        #gregorian-date { color: #888; font-size: 3.8cqw; font-weight: 500; margin-top: 1cqw; margin-bottom: 3cqw;}
 
-        #info-message { color: #aaaaaa; font-size: clamp(1em, 3.5vmin, 1.2em); margin-bottom: 20px; font-weight: bold; min-height: 28px; transition: color 0.3s; }
-
-        #elevator-container { 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            width: 100%; 
+        /* שורת ההודעה: נעולה לשורה אחת, לא נשברת לעולם (nowrap) */
+        #info-message { 
+            color: #aaaaaa; 
+            font-size: 3.6cqw; 
+            font-weight: bold; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            height: 5cqw; 
+            line-height: 5cqw; 
+            margin-bottom: 4cqw; 
+            transition: color 0.3s; 
+            flex-shrink: 0;
+            width: 100%;
         }
+
+        #elevator-container { display: flex; justify-content: center; gap: 4cqw; width: 100%; flex-grow: 1; min-height: 0; }
         
-        /* קופסאות המעליות במבנה הטבעי שלהן - לא נמתחות אנכית */
         .elevator-box { 
             background: #1e1e1e; 
-            border-radius: 15px; 
-            padding: 20px 15px; 
+            border-radius: 4cqw; 
+            padding: 4cqw; 
             flex: 1; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.3); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: flex-start; /* שומר שהכל יישאר צפוף וטבעי */
+            justify-content: space-between; 
         }
         
-        .title { color: #888; font-size: clamp(1em, 3.5vmin, 1.2em); margin-bottom: 10px; }
-        .floor { font-size: clamp(4em, 16vmin, 6.5em); font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; margin: 5px 0; line-height: 1;}
-        .floor-error { color: #ff4444; font-size: clamp(2em, 8vmin, 3em); }
+        .title { color: #888; font-size: 4.5cqw; margin: 0; }
+        .floor { font-size: 26cqw; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; margin: 0; line-height: 1;}
+        .floor.floor-error { color: #ff4444; font-size: 13cqw; }
         
-        .timer-display { margin-top: 10px; font-weight: bold; font-variant-numeric: tabular-nums; transition: all 0.3s; min-height: 40px; display: flex; align-items: center; justify-content: center; direction: ltr;}
-        .timer-display.active { font-size: clamp(1.8em, 7vmin, 2.5em); color: #00C851; }
-        .timer-display.standby { font-size: clamp(1em, 3.5vmin, 1.2em); color: #ffbb33; }
+        /* טיימר בעל גובה קבוע ונעול מראש (12cqw) כדי למנוע דחיפה של כפתור הבחירה! */
+        .timer-display { 
+            height: 12cqw; 
+            width: 100%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            direction: ltr; 
+            margin: 1cqw 0;
+            font-weight: bold; 
+            font-variant-numeric: tabular-nums; 
+        }
+        .timer-display.active { font-size: 9cqw; color: #00C851; }
+        .timer-display.standby { font-size: 4cqw; color: #ffbb33; }
         
-        .floor-select-wrap { margin-top: 15px; font-size: clamp(0.9em, 3vmin, 1.1em); color: #aaa; border-top: 1px solid #333; padding-top: 15px; width: 100%; box-sizing: border-box;}
-        .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 8px; font-family: inherit; font-size: 0.9em; cursor: pointer; outline: none; width: 100%; box-sizing: border-box;}
+        .floor-select-wrap { 
+            width: 100%; 
+            border-top: 1px solid #333; 
+            padding-top: 3cqw; 
+            margin-top: auto;
+            font-size: 3.5cqw; 
+            color: #aaa; 
+            text-align: center;
+        }
+        .floor-select-wrap select { 
+            background: #333; 
+            color: white; 
+            border: 1px solid #bb86fc; 
+            border-radius: 1.5cqw; 
+            padding: 2cqw; 
+            font-family: inherit; 
+            font-size: 4cqw; 
+            cursor: pointer; 
+            outline: none; 
+            width: 100%; 
+            margin-top: 1cqw;
+            box-sizing: border-box;
+        }
         
-        .developer-credit { margin-top: 30px; font-size: 0.85em; color: #666; text-align: center; }
-        .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
+        .developer-credit { margin-top: 3cqw; font-size: 3cqw; color: #666; text-align: center; flex-shrink: 0; }
+        .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; }
         .developer-credit a:hover { color: #bb86fc; }
 
         /* אזור הפיתוח (Popup) */
         #devPanel { 
-            display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
             padding: 20px; background: rgba(26,26,26,0.95); border-radius: 10px; border: 1px solid #555; 
             color: #aaaaaa; font-size: 16px; text-align: right; width: 90%; max-width: 400px; 
-            z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.8); box-sizing: border-box;
+            z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.9); box-sizing: border-box;
         }
         #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
         .dev-btn { background: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; width: 100%;}
         .dev-btn:hover { background: #6200ea; }
         .dev-btn-danger { background: #cf6679; color: #000; margin-top: 5px;}
         .dev-btn-danger:hover { background: #ff7597; }
-
     </style>
 </head>
 <body>
 
-    <div id="main-container">
+    <div id="app-container">
         <div class="bsd">בס״ד</div>
         <div class="viewers" title="צופים מחוברים כעת">👁️ <span id="uCount">0</span></div>
         <button id="authBtn" title="אזור מפתחים">🔒</button>
@@ -152,7 +193,7 @@
         <div class="developer-credit">
             Developed by Avihai Ofir: <a href="mailto:avihai88@gmail.com">avihai88@gmail.com</a>
         </div>
-        
+
         <div id="devPanel">
             <h3 style="color: #bb86fc; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">אזור טכני (מצב בדיקות)</h3>
             <button id="closeDevBtn" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer; position:absolute; top:15px; left:15px;">✖</button>
