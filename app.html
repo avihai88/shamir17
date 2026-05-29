@@ -530,7 +530,7 @@
         socket.on('elevator_update', (data) => {
             lastUpdateTime = Date.now();
             const payload = data.floor;
-            let val = (payload === "-99") ? "תקלה" : (payload === "-1") ? "⬇️" : (payload === "-2") ? "⬆️" : payload;
+            let val = (payload === "-99") ? "?" : (payload === "-1") ? "⬇️" : (payload === "-2") ? "⬆️" : payload;
             
             if (data.side === 'left') {
                 const el = document.getElementById("leftFloor");
