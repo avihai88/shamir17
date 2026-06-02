@@ -570,6 +570,24 @@
         fetchShabbatTimes();
         fetchWeather();
         setInterval(fetchWeather, 3 * 60 * 60 * 1000); 
+        // ==========================================
+        // --- מנגנון החלקת פיקסלים למניעת צריבת מסך ---
+        // ==========================================
+        function applyPixelShift() {
+            const container = document.getElementById("main-container");
+            if (container) {
+                // הגרלת מספר בין 5- ל-5
+                const offsetX = Math.floor(Math.random() * 11) - 5;
+                const offsetY = Math.floor(Math.random() * 11) - 5;
+                
+                // החלה של התזוזה עם מעבר (אנימציה) איטי כדי לא להבהיל את הצופה
+                container.style.transition = "transform 3s ease-in-out";
+                container.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            }
+        }
+        
+        // הפעלת התזוזה כל 5 דקות
+        setInterval(applyPixelShift,  1000);
         setInterval(evaluateSystemState, 5000); 
     </script>
 </body>
