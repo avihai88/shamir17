@@ -101,7 +101,7 @@
             align-items: center; 
         }
         
-        .title { color: #888; font-size: 1.1em; margin-bottom: 20px; margin-top: -10px; }
+        .title { color: #888; font-size: 1.1em; margin-bottom: 30px; margin-top: -20px; }
         
         /* גובה קבוע לקומה כדי למנוע קפיצות בין מספרים לשגיאות */
         .floor-wrapper { height: 1.2em; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
@@ -443,14 +443,30 @@
                 let parashaName = "";
                 shabbatStart = null;
                 shabbatEnd = null;
+                
+                let candlesDateStr = "";
 
+                // שלב 1: מציאת זמני הכניסה והיציאה תחילה (העוגן שלנו)
                 for (let item of data.items) {
                     if (item.category === "candles" && !shabbatStart) {
                         shabbatStart = new Date(item.date);
+                        // שומרים את תאריך הכניסה כטקסט נקי (YYYY-MM-DD) כדי להשוות מולו
+                        candlesDateStr = item.date.substring(0, 10);
                     }
                     if (item.category === "havdalah") {
                         shabbatEnd = new Date(item.date);
                     }
+                }
+
+                // שלב 2: חילוץ החג והפרשה - דילוג על אירועי אמצע שבוע שכבר עברו
+                for (let item of data.items) {
+                    let itemDateStr = item.date.substring(0, 10);
+                    
+                    // אם מצאנו מועד כניסת שבת, מדלגים על כל אירוע שקדם לו
+                    if (candlesDateStr && itemDateStr < candlesDateStr) {
+                        continue;
+                    }
+
                     if (item.category === "holiday" && !holidayName) {
                         holidayName = item.hebrew;
                     }
