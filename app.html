@@ -22,6 +22,7 @@
             justify-content: center;
             overflow-y: auto; 
             overflow-x: hidden;
+            transition: background-color 2s ease;
         }
 
         /* הקונטיינר המרכזי מותאם לרוחב טאבלט טיפוסי */
@@ -43,7 +44,7 @@
         #authBtn:hover { opacity: 0.8; }
 
         .header { margin-bottom: 15px; }
-        h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #ffffff; }
+        h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #ffffff; transition: color 2s ease; }
         
         /* השורה המאוחדת החדשה של הפרשה והזמנים */
         #combined-info-line { 
@@ -91,7 +92,7 @@
         }
         
         .elevator-box { 
-            background: #1e1e1e; 
+            background-color: #1e1e1e; 
             border-radius: 12px; 
             padding: 20px 15px; 
             flex: 1; 
@@ -99,8 +100,11 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
+            border: 1px solid transparent;
+            transition: box-shadow 2s ease, background-color 2s ease, border-color 2s ease;
         }
         
+        /* מורחק מעט למעלה כדי למנוע הסתרה ע"י חצי כיוון */
         .title { color: #888; font-size: 1.1em; margin-bottom: 30px; margin-top: -20px; }
         
         /* גובה קבוע לקומה כדי למנוע קפיצות בין מספרים לשגיאות */
@@ -125,24 +129,39 @@
         .timer-display.standby { font-size: 1em; color: #ffbb33; }
         
         .floor-select-wrap { margin-top: auto; font-size: 1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px; padding-bottom: max(35px, env(safe-area-inset-bottom)); width: 100%; box-sizing: border-box;}
-        .floor-select-wrap select { background: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 6px; font-family: inherit; font-size: 1em; cursor: pointer; outline: none; width: 100%; margin-top: 5px; box-sizing: border-box;}
+        .floor-select-wrap select { background-color: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 6px; font-family: inherit; font-size: 1em; cursor: pointer; outline: none; width: 100%; margin-top: 5px; box-sizing: border-box;}
         
         .developer-credit { margin-top: 25px; font-size: 0.85em; color: #666; text-align: center; }
         .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
         .developer-credit a:hover { color: #bb86fc; }
 
+        /* ======== עיצוב ייעודי למצב שבת (Ambient Shift) ======== */
+        body.shabbat-active {
+            background-color: #050a14; /* כחול-חצות עמוק */
+        }
+        
+        body.shabbat-active .elevator-box {
+            background-color: #151a25; /* התאמת גוון הקופסה */
+            border-color: rgba(255, 187, 51, 0.3); /* מסגרת זהב-ענבר עדינה */
+            box-shadow: 0 8px 25px rgba(255, 187, 51, 0.15); /* הילה רכה מסביב לקופסה */
+        }
+        
+        body.shabbat-active h2 {
+            color: #ffbb33; /* צביעת הכותרת המרכזית בזהב */
+        }
+
         /* אזור הפיתוח (Popup) */
         #devPanel { 
             display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            padding: 20px; background: rgba(26,26,26,0.95); border-radius: 10px; border: 1px solid #555; 
+            padding: 20px; background-color: rgba(26,26,26,0.95); border-radius: 10px; border: 1px solid #555; 
             color: #aaaaaa; font-size: 16px; text-align: right; width: 90%; max-width: 400px; 
             z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.8); box-sizing: border-box;
         }
-        #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
-        .dev-btn { background: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; width: 100%;}
-        .dev-btn:hover { background: #6200ea; }
-        .dev-btn-danger { background: #cf6679; color: #000; margin-top: 5px;}
-        .dev-btn-danger:hover { background: #ff7597; }
+        #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background-color: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
+        .dev-btn { background-color: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; width: 100%;}
+        .dev-btn:hover { background-color: #6200ea; }
+        .dev-btn-danger { background-color: #cf6679; color: #000; margin-top: 5px;}
+        .dev-btn-danger:hover { background-color: #ff7597; }
 
         /* התאמה זעירה למסכים שהם גם לרוחב וגם נמוכים (כדי לאפשר צפייה ללא גלילה בטאבלט טיפוסי) */
         @media (orientation: landscape) and (max-height: 650px) {
@@ -385,6 +404,9 @@
                 lEl.innerText = "מחשב זמנים...";
                 lEl.className = "timer-display standby";
             }
+            
+            // עוגן סנכרון מרכזי: בדיקת הסטטוס מתבצעת יחד עם פעימת השעון כל שנייה
+            evaluateSystemState();
         }
         setInterval(updateClockAndTimers, 1000);
         updateClockAndTimers();
@@ -520,6 +542,9 @@
             if (!socket.connected) socket.connect();
 
             if (isVisibleWindow || isOverrideOn) {
+                // הפעלת העיצוב החזותי של שבת (Ambient Shift)
+                document.body.classList.add('shabbat-active');
+
                 if (shabbatStart && now < shabbatStart && !isOverrideOn) {
                     infoMsg.innerText = `שימו לב: מצב המעליות העדכני יחל כ-${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת`;
                     infoMsg.style.color = "#ffbb33";
@@ -528,6 +553,9 @@
                     infoMsg.style.color = "#00C851";
                 }
             } else {
+                // כיבוי העיצוב החזותי וחזרה ליום חול
+                document.body.classList.remove('shabbat-active');
+
                 const isDataFresh = (now.getTime() - lastUpdateTime) < (3 * 60 * 1000);
                 const statusText = isDataFresh ? 
                     '<span style="color:#00C851">מיקום המעליות פעיל</span>' : 
@@ -602,9 +630,8 @@
             }
         }
         
-        // הפעלת התזוזה כל 5 דקות
-        setInterval(applyPixelShift,  1000);
-        setInterval(evaluateSystemState, 5000); 
+        // הפעלת התזוזה כל 5 דקות (300,000 מילישניות במקום 1000)
+        setInterval(applyPixelShift, 300000);
     </script>
 </body>
 </html>
