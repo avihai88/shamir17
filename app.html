@@ -4,25 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מעליות שבת - יצחק שמיר 17</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%97%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         /* איפוס האתר: ממורכז אוטומטית, מאפשר גלילה אם צריך, תומך בטאבלטים שוכבים */
-        body { 
-            background-color: #121212; 
-            color: #ffffff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 15px 10px; 
-            box-sizing: border-box; 
+        body {
+            background-color: #0b0b0d;
+            color: #f2f2f4;
+            font-family: 'Heebo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 15px 10px;
+            box-sizing: border-box;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow-y: auto; 
+            overflow-y: auto;
             overflow-x: hidden;
             transition: background-color 2s ease;
+        }
+
+        /* תאורה אמביינטית עדינה ברקע - ללא צבע, רק עומק */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 45% at 50% 30%, rgba(255,255,255,0.055), transparent 70%),
+                radial-gradient(ellipse 45% 35% at 85% 95%, rgba(255,255,255,0.035), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+            animation: ambientDrift 26s ease-in-out infinite;
+        }
+        @keyframes ambientDrift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(0, -14px) scale(1.03); }
+        }
+        /* טקסטורת גרעין דקיקה כדי לתת תחושת חומר ולא מסך שטוח */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: -1;
         }
 
         /* הקונטיינר המרכזי מותאם לרוחב טאבלט טיפוסי */
@@ -32,10 +64,21 @@
             position: relative;
             display: flex;
             flex-direction: column;
+            animation: riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        
-        .bsd { position: absolute; top: -10px; right: 10px; font-size: 0.85em; color: #888; z-index: 1000; }
-        .viewers { position: absolute; top: -10px; left: 45px; font-size: 0.9em; color: #00C851; z-index: 1000; font-weight: bold; }
+        @keyframes riseIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bsd { position: absolute; top: -10px; right: 10px; font-size: 0.85em; color: #6b6d74; z-index: 1000; }
+        .viewers { position: absolute; top: -10px; left: 45px; font-size: 0.9em; color: #7a8088; z-index: 1000; font-weight: bold; }
+        .viewers::before {
+            content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+            background: #34d399; box-shadow: 0 0 6px #34d399; margin-left: 5px; vertical-align: middle;
+            animation: dotPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         #authBtn {
             position: absolute; top: -15px; left: 5px; background: none; border: none;
@@ -44,124 +87,187 @@
         #authBtn:hover { opacity: 0.8; }
 
         .header { margin-bottom: 15px; }
-        h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #ffffff; transition: color 2s ease; }
-        
+        h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; font-weight: 700; letter-spacing: 0.2px; color: #f2f2f4; text-shadow: 0 1px 3px rgba(0,0,0,0.5); transition: color 2s ease; }
+
         /* השורה המאוחדת החדשה של הפרשה והזמנים */
-        #combined-info-line { 
-            color: #aaaaaa; 
-            font-size: 1.2em; 
-            margin-bottom: 10px; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
+        #combined-info-line {
+            color: #9a9ca3;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             width: 100%;
         }
-        .parasha-text { 
-            color: #bb86fc; 
-            font-size: 1.1em; 
-            font-weight: bold; 
-            margin-left: 5px; 
+        .parasha-text {
+            color: #e4e5e8;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-left: 5px;
         }
-        
-        #weather-line { color: #4dd0e1; font-size: 1.1em; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+
+        #weather-line { color: #c7c9ce; font-size: 1.1em; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .weather-temp { color: #ffffff; direction: ltr; margin-right: 5px; }
-        
-        #clock-line { font-size: 3.5em; font-weight: bold; margin-bottom: 5px; font-variant-numeric: tabular-nums; line-height: 1; }
-        #gregorian-date { color: #888; font-size: 1em; margin-bottom: 15px; font-weight: 500; }
+
+        #clock-line {
+            font-size: 3.5em; font-weight: bold; margin-bottom: 5px; font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: 1px;
+            background: linear-gradient(180deg, #ffffff, #c7c9ce);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(0 0 18px rgba(255,255,255,0.12));
+        }
+        #gregorian-date { color: #6b6d74; font-size: 1em; margin-bottom: 15px; font-weight: 500; }
 
         /* שורת הסטטוס: קטנה יותר, בשורה אחת בלבד, לא דוחפת אלמנטים למטה */
-        #info-message { 
-            color: #aaaaaa; 
-            font-size: 0.95em; 
-            margin-bottom: 15px; 
-            font-weight: bold; 
-            white-space: nowrap; 
-            overflow: hidden; 
+        #info-message {
+            color: #9a9ca3;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
             text-overflow: ellipsis;
             height: 20px;
             line-height: 20px;
-            transition: color 0.3s; 
+            transition: color 0.3s;
+            width: 100%;
+        }
+        .live-dot {
+            display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+            background: currentColor; box-shadow: 0 0 6px currentColor; vertical-align: middle;
+            animation: dotPulse 1.8s ease-in-out infinite;
+        }
+
+        #elevator-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
             width: 100%;
         }
 
-        #elevator-container { 
-            display: flex; 
-            justify-content: center; 
-            gap: 20px; 
-            width: 100%; 
-        }
-        
-        .elevator-box { 
-            background-color: #1e1e1e; 
-            border-radius: 12px; 
-            padding: 20px 15px; 
-            flex: 1; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            border: 1px solid transparent;
+        .elevator-box {
+            position: relative;
+            background: linear-gradient(180deg, #18181b, #141416);
+            border-radius: 14px;
+            padding: 20px 15px;
+            flex: 1;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 28px rgba(0,0,0,0.45);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.08);
             transition: box-shadow 2s ease, background-color 2s ease, border-color 2s ease;
         }
-        
+        .elevator-box::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 14%; right: 14%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+
         /* מורחק מעט למעלה כדי למנוע הסתרה ע"י חצי כיוון */
-        .title { color: #888; font-size: 1.1em; margin-bottom: 30px; margin-top: -20px; }
-        
+        .title { color: #83868f; font-size: 1.1em; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 30px; margin-top: -20px; }
+
         /* גובה קבוע לקומה כדי למנוע קפיצות בין מספרים לשגיאות */
         .floor-wrapper { height: 1.2em; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
-        .floor { font-size: 5.5em; font-weight: bold; color: #ffffff; direction: ltr; transition: color 0.3s; line-height: 1; margin: 0;}
-        .floor-error { color: #ff4444; font-size: 2.5em; }
-        
-        /* גובה קשיח ומוחלט לטיימר (55px) - שומר את מקומו מראש ולעולם לא משפיע על כפתור הקומה */
-        .timer-display { 
-            height: 55px; 
-            width: 100%;
-            margin-top: 15px; 
-            font-weight: bold; 
-            font-variant-numeric: tabular-nums; 
-            transition: color 0.3s; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            direction: ltr;
+        .floor {
+            font-size: 5.5em; font-weight: bold; direction: ltr; transition: color 0.3s; line-height: 1; margin: 0;
+            background: linear-gradient(180deg, #ffffff 0%, #dcdde1 60%, #b9bbc1 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(0 0 22px rgba(255,255,255,0.12));
         }
-        .timer-display.active { font-size: 2.2em; color: #00C851; }
-        .timer-display.standby { font-size: 1em; color: #ffbb33; }
-        
-        .floor-select-wrap { margin-top: auto; font-size: 1em; color: #aaa; border-top: 1px solid #333; padding-top: 15px; padding-bottom: max(35px, env(safe-area-inset-bottom)); width: 100%; box-sizing: border-box;}
-        .floor-select-wrap select { background-color: #333; color: white; border: 1px solid #bb86fc; border-radius: 6px; padding: 6px; font-family: inherit; font-size: 1em; cursor: pointer; outline: none; width: 100%; margin-top: 5px; box-sizing: border-box;}
-        
-        .developer-credit { margin-top: 25px; font-size: 0.85em; color: #666; text-align: center; }
-        .developer-credit a { color: #666; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
-        .developer-credit a:hover { color: #bb86fc; }
+        .floor-error {
+            font-size: 2.5em; background: none; -webkit-background-clip: initial; background-clip: initial;
+            color: #f2545b; filter: none; animation: errorBlink 1.4s ease-in-out infinite;
+        }
+        @keyframes errorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        /* חצים הם אימוג'י צבעוני - background-clip:text שובר את הצבע שלהם, לכן מאפסים את אפקט הגרדיאנט */
+        .floor-arrow {
+            background: none; -webkit-background-clip: initial; background-clip: initial;
+            color: #ffffff; filter: none;
+        }
+
+        /* השורה התחתונה: הטיימר ובחירת הקומה יחד */
+        .bottom-row {
+            margin-top: 20px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-sizing: border-box;
+        }
+
+        /* גובה קשיח ומוחלט לטיימר (55px) - שומר את מקומו מראש ולעולם לא משפיע על כפתור הקומה */
+        .timer-display {
+            height: 55px;
+            min-width: 92px;
+            flex: 0 1 auto;
+            padding: 0 10px;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.3s, background-color 0.3s, border-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: ltr;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+        }
+        .timer-display.active { font-size: 2.2em; color: #34d399; background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.25); animation: timerGlow 2.6s ease-in-out infinite; }
+        .timer-display.standby { font-size: 1em; color: #f5b942; }
+        @keyframes timerGlow {
+            0%, 100% { box-shadow: 0 0 0 rgba(52,211,153,0); }
+            50% { box-shadow: 0 0 16px rgba(52,211,153,0.3); }
+        }
+
+        .floor-select-wrap { display: flex; align-items: center; gap: 7px; font-size: 0.9em; color: #9a9ca3; }
+        .floor-select-wrap label { white-space: nowrap; }
+        .floor-select-wrap select { background-color: #1c1d20; color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 8px; font-family: inherit; font-size: 0.95em; cursor: pointer; outline: none; width: auto; min-width: 70px; box-sizing: border-box; transition: border-color 0.2s;}
+        .floor-select-wrap select:focus { border-color: rgba(255,255,255,0.4); }
+
+        .developer-credit { margin-top: 25px; font-size: 0.85em; color: #55575d; text-align: center; }
+        .developer-credit a { color: #55575d; text-decoration: none; transition: color 0.3s; font-family: monospace; font-size: 1.1em; }
+        .developer-credit a:hover { color: #c7c9ce; }
 
         /* ======== עיצוב ייעודי למצב שבת (Ambient Shift) ======== */
         body.shabbat-active {
-            background-color: #050a14; /* כחול-חצות עמוק */
+            background-color: #07090d; /* שחור-חצות עמוק */
         }
-        
+
         body.shabbat-active .elevator-box {
-            background-color: #151a25; /* התאמת גוון הקופסה */
-            border-color: rgba(255, 187, 51, 0.3); /* מסגרת זהב-ענבר עדינה */
-            box-shadow: 0 8px 25px rgba(255, 187, 51, 0.15); /* הילה רכה מסביב לקופסה */
+            background: linear-gradient(180deg, #19160f, #141210); /* התאמת גוון הקופסה */
+            border-color: rgba(245, 185, 66, 0.28); /* מסגרת זהב-ענבר עדינה */
+            animation: shabbatGlow 6s ease-in-out infinite; /* הילה נושמת בעדינות כתחושת נר */
         }
-        
+        @keyframes shabbatGlow {
+            0%, 100% { box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 6px 20px rgba(245, 185, 66, 0.1); }
+            50% { box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 28px rgba(245, 185, 66, 0.2); }
+        }
+        body.shabbat-active .elevator-box::before {
+            background: linear-gradient(90deg, transparent, rgba(245,185,66,0.5), transparent);
+        }
+
         body.shabbat-active h2 {
-            color: #ffbb33; /* צביעת הכותרת המרכזית בזהב */
+            color: #f5b942; /* צביעת הכותרת המרכזית בזהב */
         }
 
         /* אזור הפיתוח (Popup) */
-        #devPanel { 
+        #devOverlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1900;
+        }
+        #devPanel {
             display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            padding: 20px; background-color: rgba(26,26,26,0.95); border-radius: 10px; border: 1px solid #555; 
-            color: #aaaaaa; font-size: 16px; text-align: right; width: 90%; max-width: 400px; 
+            padding: 20px; background-color: rgba(20,20,22,0.97); border-radius: 10px; border: 1px solid #3a3b40;
+            color: #9a9ca3; font-size: 16px; text-align: right; width: 90%; max-width: 400px;
             z-index: 2000; box-shadow: 0 10px 25px rgba(0,0,0,0.8); box-sizing: border-box;
         }
-        #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background-color: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
-        .dev-btn { background-color: #3700b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; width: 100%;}
-        .dev-btn:hover { background-color: #6200ea; }
-        .dev-btn-danger { background-color: #cf6679; color: #000; margin-top: 5px;}
-        .dev-btn-danger:hover { background-color: #ff7597; }
+        #devPanel input[type="text"], #devPanel input[type="date"], #devPanel input[type="time"] { background-color: #1c1d20; color: white; border: 1px solid #3a3b40; padding: 8px; border-radius: 5px; font-family: inherit; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
+        #devPanel select { background-color: #1c1d20; color: white; border: 1px solid #3a3b40; padding: 8px; border-radius: 5px; font-family: inherit; font-size: 0.95em; width: 100%; box-sizing: border-box; margin-top: 4px; cursor: pointer; }
+        .dev-btn { background-color: #2a2b30; color: white; border: 1px solid #3a3b40; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; width: 100%;}
+        .dev-btn:hover { background-color: #35363c; }
+        .dev-btn-danger { background-color: #f2545b; color: #1a0a0a; border-color: #f2545b; margin-top: 5px;}
+        .dev-btn-danger:hover { background-color: #ff7078; }
 
         /* התאמה זעירה למסכים שהם גם לרוחב וגם נמוכים (כדי לאפשר צפייה ללא גלילה בטאבלט טיפוסי) */
         @media (orientation: landscape) and (max-height: 650px) {
@@ -174,16 +280,19 @@
             #info-message { font-size: 0.85em; margin-bottom: 10px; }
             .elevator-box { padding: 10px; }
             .floor { font-size: 4.5em; }
-            .timer-display { height: 45px; }
+            .timer-display { height: 45px; min-width: 78px; }
             .timer-display.active { font-size: 1.8em; }
             .timer-display.standby { font-size: 0.9em; }
-            .floor-select-wrap { padding-top: 5px; margin-top: 5px; font-size: 0.9em; }
-            .floor-select-wrap select { padding: 4px; font-size: 0.9em; margin-top: 3px; }
+            .bottom-row { margin-top: 10px; gap: 6px; }
+            .floor-select-wrap { font-size: 0.8em; }
+            .floor-select-wrap select { padding: 4px 6px; font-size: 0.85em; min-width: 56px; }
             .developer-credit { margin-top: 10px; font-size: 0.75em; }
         }
     </style>
 </head>
 <body>
+
+    <div id="devOverlay"></div>
 
     <div id="main-container">
         <div class="bsd">בס״ד</div>
@@ -192,7 +301,7 @@
 
         <div class="header">
             <h2>מעליות שבת יצחק שמיר 17</h2>
-            
+
             <div id="combined-info-line">טוען נתונים...</div>
 
             <div id="weather-line">מחשב מזג אוויר...</div>
@@ -209,10 +318,12 @@
                 <div class="floor-wrapper">
                     <div id="rightFloor" class="floor">--</div>
                 </div>
-                <div id="rightTimer" class="timer-display standby"></div>
-                <div class="floor-select-wrap">
-                    <label>טיימר לקומה: </label>
-                    <select id="rightFloorSelect"></select>
+                <div class="bottom-row">
+                    <div id="rightTimer" class="timer-display standby"></div>
+                    <div class="floor-select-wrap">
+                        <label>טיימר לקומה:</label>
+                        <select id="rightFloorSelect"></select>
+                    </div>
                 </div>
             </div>
             <div class="elevator-box">
@@ -220,10 +331,12 @@
                 <div class="floor-wrapper">
                     <div id="leftFloor" class="floor">--</div>
                 </div>
-                <div id="leftTimer" class="timer-display standby"></div>
-                <div class="floor-select-wrap">
-                    <label>טיימר לקומה: </label>
-                    <select id="leftFloorSelect"></select>
+                <div class="bottom-row">
+                    <div id="leftTimer" class="timer-display standby"></div>
+                    <div class="floor-select-wrap">
+                        <label>טיימר לקומה:</label>
+                        <select id="leftFloorSelect"></select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -231,9 +344,9 @@
         <div class="developer-credit">
             Developed by Avihai Ofir: <a href="mailto:avihai88@gmail.com">avihai88@gmail.com</a>
         </div>
-        
+
         <div id="devPanel">
-            <h3 style="color: #bb86fc; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">אזור טכני (מצב בדיקות)</h3>
+            <h3 style="color: #e4e5e8; margin-top: 0; border-bottom: 1px solid #3a3b40; padding-bottom: 10px;">אזור טכני (מצב בדיקות)</h3>
             <button id="closeDevBtn" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer; position:absolute; top:15px; left:15px;">✖</button>
             <div style="margin-bottom: 20px;">
                 <strong style="color: white;">אפשרות 1: הפעלה אקטיבית</strong><br>
@@ -241,7 +354,7 @@
                     <input type="checkbox" id="overrideToggle"> הפעל מערכת כעת
                 </label>
             </div>
-            <hr style="border-color: #333; margin: 15px 0;">
+            <hr style="border-color: #3a3b40; margin: 15px 0;">
             <div>
                 <strong style="color: white;">אפשרות 2: סימולציית זמנים</strong><br>
                 <input type="date" id="simDate"><br>
@@ -254,6 +367,20 @@
                     <button id="cancelSimBtn" class="dev-btn dev-btn-danger">בטל וחזור לאמת</button>
                 </div>
             </div>
+            <hr style="border-color: #3a3b40; margin: 15px 0;">
+            <div>
+                <strong style="color: white;">אפשרות 3: תצוגת קומה לבדיקה חזותית</strong><br>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:0.85em;">ימין:</label>
+                        <select id="testRightFloor"></select>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:0.85em;">שמאל:</label>
+                        <select id="testLeftFloor"></select>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -261,28 +388,28 @@
         // ==========================================
         // --- הגדרות משתנים לבניינים ---
         // ==========================================
-        const BUILDING_ID = "shamir17"; 
+        const BUILDING_ID = "shamir17";
 
-        const MINUTES_BEFORE_START = 10;   
-        const SYNC_INFO_MINUTES = 15; 
-        const SAFETY_REFRESH_OFFSET = 1; 
+        const MINUTES_BEFORE_START = 10;
+        const SYNC_INFO_MINUTES = 15;
+        const SAFETY_REFRESH_OFFSET = 1;
 
-        const MAX_BUILDING_FLOORS = 24;  
-        const RIGHT_CYCLE_SECONDS = 480; 
-        const LEFT_CYCLE_SECONDS = 480;  
+        const MAX_BUILDING_FLOORS = 24;
+        const RIGHT_CYCLE_SECONDS = 480;
+        const LEFT_CYCLE_SECONDS = 480;
 
-        const RIGHT_FLOORS_MODE = "odd";  
-        const LEFT_FLOORS_MODE = "even";  
+        const RIGHT_FLOORS_MODE = "odd";
+        const LEFT_FLOORS_MODE = "even";
 
         // --- התחברות לשרת המתווך (WebSockets) ---
-        const socket = io("https://shamir17.onrender.com", { autoConnect: false }); 
-        
+        const socket = io("https://shamir17.onrender.com", { autoConnect: false });
+
         socket.on('connect', () => {
             socket.emit('join_building', BUILDING_ID);
         });
 
         let shabbatStart = null, shabbatEnd = null;
-        let isSimulationActive = false; 
+        let isSimulationActive = false;
         let lastUpdateTime = Date.now();
 
         let rightLastFloor = null;
@@ -300,10 +427,56 @@
             return opts;
         }
 
+        // מציג ערך קומה (מספר / חץ / שגיאה) בתא התצוגה, זהה לפורמט שמגיע מהשרת האמיתי
+        function renderFloorDisplay(elId, payload) {
+            const el = document.getElementById(elId);
+            let val = (payload === "-99") ? "?" : (payload === "-1") ? "⬇️" : (payload === "-2") ? "⬆️" : payload;
+            el.innerText = val;
+            if (payload === "-99") {
+                el.className = "floor floor-error";
+            } else if (payload === "-1" || payload === "-2") {
+                el.className = "floor floor-arrow";
+            } else {
+                el.className = "floor";
+            }
+        }
+
+        // תפריטי בדיקה חזותית: מאפשרים להציג כל ספרה/חץ/שגיאה בתא הקומה ידנית, ללא תלות בנתוני שרת אמיתיים
+        function buildTestFloorOptionsHTML() {
+            let opts = '<option value="">-- (איפוס)</option>';
+            opts += '<option value="-2">⬆️ חץ למעלה</option>';
+            opts += '<option value="-1">⬇️ חץ למטה</option>';
+            opts += '<option value="-99">? שגיאה</option>';
+            for (let i = 0; i <= MAX_BUILDING_FLOORS; i++) {
+                opts += `<option value="${i}">קומה ${i}</option>`;
+            }
+            return opts;
+        }
+
+        // כאשר true, מתעלמים מעדכוני שרת אמיתיים לאותו צד כדי שערך הבדיקה הידני יישאר יציב על המסך
+        let rightFloorTestActive = false;
+        let leftFloorTestActive = false;
+
+        function initTestFloorControls() {
+            const rTest = document.getElementById("testRightFloor");
+            const lTest = document.getElementById("testLeftFloor");
+            rTest.innerHTML = buildTestFloorOptionsHTML();
+            lTest.innerHTML = buildTestFloorOptionsHTML();
+
+            rTest.addEventListener("change", (e) => {
+                rightFloorTestActive = e.target.value !== "";
+                renderFloorDisplay("rightFloor", e.target.value === "" ? "--" : e.target.value);
+            });
+            lTest.addEventListener("change", (e) => {
+                leftFloorTestActive = e.target.value !== "";
+                renderFloorDisplay("leftFloor", e.target.value === "" ? "--" : e.target.value);
+            });
+        }
+
         function initDropdowns() {
             const rSel = document.getElementById("rightFloorSelect");
             const lSel = document.getElementById("leftFloorSelect");
-            
+
             rSel.innerHTML = buildOptionsHTML(RIGHT_FLOORS_MODE);
             lSel.innerHTML = buildOptionsHTML(LEFT_FLOORS_MODE);
 
@@ -322,16 +495,26 @@
 
         const authBtn = document.getElementById("authBtn");
         const devPanel = document.getElementById("devPanel");
+        const devOverlay = document.getElementById("devOverlay");
+
+        function openDevPanel() {
+            devPanel.style.display = "block";
+            devOverlay.style.display = "block";
+        }
+        function closeDevPanel() {
+            devPanel.style.display = "none";
+            devOverlay.style.display = "none";
+        }
+
         authBtn.addEventListener('click', () => {
             const pass = prompt("נא להזין סיסמת מפתח:");
             if (pass === "0504300227") {
-                devPanel.style.display = "block";
+                openDevPanel();
             } else if (pass !== null) alert("סיסמה שגויה");
         });
-        
-        document.getElementById("closeDevBtn").addEventListener('click', () => {
-            devPanel.style.display = "none";
-        });
+
+        document.getElementById("closeDevBtn").addEventListener('click', closeDevPanel);
+        devOverlay.addEventListener('click', closeDevPanel);
 
         const overrideCheckbox = document.getElementById("overrideToggle");
         if (localStorage.getItem("testModeActive") === "true") overrideCheckbox.checked = true;
@@ -349,30 +532,30 @@
             const opt = {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Jerusalem'};
             const startStr = shabbatStart.toLocaleTimeString('he-IL', opt);
             const endStr = shabbatEnd.toLocaleTimeString('he-IL', opt);
-            
+
             // עדכון השורה המאוחדת למצב סימולציה
-            document.getElementById("combined-info-line").innerHTML = `<span class="parasha-text" style="color:#ffbb33;">מצב סימולציה</span> &nbsp;|&nbsp; כניסה: ${startStr} &nbsp;|&nbsp; יציאה: ${endStr}`;
-            
+            document.getElementById("combined-info-line").innerHTML = `<span class="parasha-text" style="color:#f5b942;">מצב סימולציה</span> &nbsp;|&nbsp; כניסה: ${startStr} &nbsp;|&nbsp; יציאה: ${endStr}`;
+
             evaluateSystemState();
-            devPanel.style.display = "none";
+            closeDevPanel();
             alert("הסימולציה הופעלה");
         });
 
         document.getElementById("cancelSimBtn").addEventListener('click', () => {
             isSimulationActive = false;
             document.getElementById("combined-info-line").innerHTML = "טוען נתונים...";
-            fetchShabbatTimes(); 
-            devPanel.style.display = "none";
+            fetchShabbatTimes();
+            closeDevPanel();
             alert("הסימולציה בוטלה");
         });
 
         function updateClockAndTimers() {
             const now = new Date();
-            
+
             document.getElementById("clock-line").innerText = now.toLocaleTimeString('he-IL', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit', timeZone:'Asia/Jerusalem'});
             const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('gregorian-date').innerText = now.toLocaleDateString('he-IL', dateOptions);
-            
+
             const rSel = document.getElementById("rightFloorSelect").value;
             const rEl = document.getElementById("rightTimer");
             if (rSel === "") {
@@ -404,7 +587,7 @@
                 lEl.innerText = "מחשב זמנים...";
                 lEl.className = "timer-display standby";
             }
-            
+
             // עוגן סנכרון מרכזי: בדיקת הסטטוס מתבצעת יחד עם פעימת השעון כל שנייה
             evaluateSystemState();
         }
@@ -416,21 +599,21 @@
                 const lat = 32.078;
                 const lon = 34.847;
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FJerusalem`;
-                
+
                 const res = await fetch(url);
                 const data = await res.json();
-                
+
                 const today = new Date();
-                let daysUntilSaturday = (6 - today.getDay() + 7) % 7; 
-                if (today.getDay() === 6) daysUntilSaturday = 0; 
-                
+                let daysUntilSaturday = (6 - today.getDay() + 7) % 7;
+                if (today.getDay() === 6) daysUntilSaturday = 0;
+
                 const maxTemp = Math.round(data.daily.temperature_2m_max[daysUntilSaturday]);
                 const minTemp = Math.round(data.daily.temperature_2m_min[daysUntilSaturday]);
                 const code = data.daily.weathercode[daysUntilSaturday];
-                
+
                 let icon = "🌤️";
                 let desc = "מעונן חלקי";
-                
+
                 if (code === 0) { icon = "☀️"; desc = "בהיר"; }
                 else if (code === 1 || code === 2) { icon = "🌤️"; desc = "מעונן חלקי"; }
                 else if (code === 3) { icon = "☁️"; desc = "מעונן"; }
@@ -440,7 +623,7 @@
                 else if (code >= 80 && code <= 82) { icon = "🌦️"; desc = "ממטרים"; }
                 else if (code >= 95) { icon = "⛈️"; desc = "סופות רעמים"; }
 
-                document.getElementById("weather-line").innerHTML = 
+                document.getElementById("weather-line").innerHTML =
                     `<span title="${desc}">${icon}</span> לשבת: <span class="weather-temp">${maxTemp}°C / ${minTemp}°C</span>`;
 
             } catch (e) {
@@ -449,23 +632,23 @@
         }
 
         async function fetchShabbatTimes(daysOffset = 0) {
-            if (isSimulationActive) return; 
+            if (isSimulationActive) return;
             try {
                 let targetDate = new Date();
                 targetDate.setDate(targetDate.getDate() + daysOffset);
-                
+
                 let sunday = new Date(targetDate);
-                sunday.setDate(sunday.getDate() - sunday.getDay()); 
-                
+                sunday.setDate(sunday.getDate() - sunday.getDay());
+
                 const url = `https://www.hebcal.com/shabbat?cfg=json&geonameid=294998&b=18&M=on&gy=${sunday.getFullYear()}&gm=${sunday.getMonth()+1}&gd=${sunday.getDate()}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                
+
                 let holidayName = "";
                 let parashaName = "";
                 shabbatStart = null;
                 shabbatEnd = null;
-                
+
                 let candlesDateStr = "";
 
                 // שלב 1: מציאת זמני הכניסה והיציאה תחילה (העוגן שלנו)
@@ -483,7 +666,7 @@
                 // שלב 2: חילוץ החג והפרשה - דילוג על אירועי אמצע שבוע שכבר עברו
                 for (let item of data.items) {
                     let itemDateStr = item.date.substring(0, 10);
-                    
+
                     // אם מצאנו מועד כניסת שבת, מדלגים על כל אירוע שקדם לו
                     if (candlesDateStr && itemDateStr < candlesDateStr) {
                         continue;
@@ -497,24 +680,24 @@
                     }
                 }
 
-                if (shabbatEnd && new Date() > shabbatEnd) { 
-                    fetchShabbatTimes(daysOffset + 7); 
-                    return; 
+                if (shabbatEnd && new Date() > shabbatEnd) {
+                    fetchShabbatTimes(daysOffset + 7);
+                    return;
                 }
-                
+
                 let displayTitleArr = [];
                 if (holidayName) displayTitleArr.push(holidayName);
                 if (parashaName) displayTitleArr.push(parashaName);
-                
+
                 let parashaText = displayTitleArr.length > 0 ? displayTitleArr.join(" | ") : "שבת קודש";
                 const opt = {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Jerusalem'};
                 let startStr = shabbatStart ? shabbatStart.toLocaleTimeString('he-IL', opt) : "--:--";
                 let endStr = shabbatEnd ? shabbatEnd.toLocaleTimeString('he-IL', opt) : "--:--";
-                
+
                 // הזרקת המידע המאוחד לשורה אחת
-                document.getElementById("combined-info-line").innerHTML = 
+                document.getElementById("combined-info-line").innerHTML =
                     `<span class="parasha-text">${parashaText}</span> &nbsp;|&nbsp; כניסה: ${startStr} &nbsp;|&nbsp; יציאה: ${endStr}`;
-                
+
                 evaluateSystemState();
             } catch (e) { document.getElementById("combined-info-line").innerText = "שגיאת נתונים"; }
         }
@@ -528,17 +711,17 @@
             if (displayStartTime && shabbatStart && !isSimulationActive && !isOverrideOn) {
                 const refreshTriggerTime = new Date(displayStartTime.getTime() + (SAFETY_REFRESH_OFFSET * 60000));
                 const todayKey = "safetyRefreshDone_" + now.toDateString();
-                
+
                 if (now >= refreshTriggerTime && now < shabbatStart && localStorage.getItem(todayKey) !== "true") {
                     localStorage.setItem(todayKey, "true");
                     location.reload();
-                    return; 
+                    return;
                 }
             }
 
             const isVisibleWindow = (displayStartTime && shabbatEnd && now >= displayStartTime && now <= shabbatEnd);
             const infoMsg = document.getElementById("info-message");
-            
+
             if (!socket.connected) socket.connect();
 
             if (isVisibleWindow || isOverrideOn) {
@@ -547,22 +730,22 @@
 
                 if (shabbatStart && now < shabbatStart && !isOverrideOn) {
                     infoMsg.innerText = `שימו לב: מצב המעליות העדכני יחל כ-${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת`;
-                    infoMsg.style.color = "#ffbb33";
+                    infoMsg.style.color = "#f5b942";
                 } else {
-                    infoMsg.innerText = "● מערכת מעליות שבת פעילה בזמן אמת";
-                    infoMsg.style.color = "#00C851";
+                    infoMsg.innerHTML = '<span class="live-dot"></span> מערכת מעליות שבת פעילה בזמן אמת';
+                    infoMsg.style.color = "#34d399";
                 }
             } else {
                 // כיבוי העיצוב החזותי וחזרה ליום חול
                 document.body.classList.remove('shabbat-active');
 
                 const isDataFresh = (now.getTime() - lastUpdateTime) < (3 * 60 * 1000);
-                const statusText = isDataFresh ? 
-                    '<span style="color:#00C851">מיקום המעליות פעיל</span>' : 
-                    '<span style="color:#ff9800">מיקום המעליות לא פעיל</span>';
-                
+                const statusText = isDataFresh ?
+                    '<span style="color:#34d399">מיקום המעליות פעיל</span>' :
+                    '<span style="color:#f5b942">מיקום המעליות לא פעיל</span>';
+
                 infoMsg.innerHTML = `מעליות השבת יכנסו לפעולה ${SYNC_INFO_MINUTES} דקות לאחר כניסת השבת | ${statusText}`;
-                infoMsg.style.color = "#aaaaaa";
+                infoMsg.style.color = "#9a9ca3";
             }
         }
 
@@ -575,12 +758,15 @@
             lastUpdateTime = Date.now();
             const payload = data.floor;
             let val = (payload === "-99") ? "?" : (payload === "-1") ? "⬇️" : (payload === "-2") ? "⬆️" : payload;
-            
+
             if (data.side === 'left') {
+                if (leftFloorTestActive) return;
                 const el = document.getElementById("leftFloor");
                 el.innerText = val;
                 if (payload === "-99") {
                     el.className = "floor floor-error";
+                } else if (payload === "-1" || payload === "-2") {
+                    el.className = "floor floor-arrow";
                 } else {
                     el.className = "floor";
                 }
@@ -591,12 +777,15 @@
                     localStorage.setItem("leftTimerEnd", leftTimerEnd);
                 }
                 leftLastFloor = payload;
-            } 
+            }
             else {
+                if (rightFloorTestActive) return;
                 const el = document.getElementById("rightFloor");
                 el.innerText = val;
                 if (payload === "-99") {
                     el.className = "floor floor-error";
+                } else if (payload === "-1" || payload === "-2") {
+                    el.className = "floor floor-arrow";
                 } else {
                     el.className = "floor";
                 }
@@ -611,9 +800,10 @@
         });
 
         initDropdowns();
+        initTestFloorControls();
         fetchShabbatTimes();
         fetchWeather();
-        setInterval(fetchWeather, 3 * 60 * 60 * 1000); 
+        setInterval(fetchWeather, 3 * 60 * 60 * 1000);
         // ==========================================
         // --- מנגנון החלקת פיקסלים למניעת צריבת מסך ---
         // ==========================================
@@ -623,13 +813,13 @@
                 // הגרלת מספר בין 5- ל-5
                 const offsetX = Math.floor(Math.random() * 11) - 5;
                 const offsetY = Math.floor(Math.random() * 11) - 5;
-                
+
                 // החלה של התזוזה עם מעבר (אנימציה) איטי כדי לא להבהיל את הצופה
                 container.style.transition = "transform 3s ease-in-out";
                 container.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
             }
         }
-        
+
         // הפעלת התזוזה כל 5 דקות (300,000 מילישניות במקום 1000)
         setInterval(applyPixelShift, 300000);
     </script>
