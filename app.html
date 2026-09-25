@@ -650,41 +650,47 @@
                 shabbatStart = null;
                 shabbatEnd = null;
 
-                let candlesDateStr = "";
-
-                // שלב 1: מציאת זמני הכניסה והיציאה תחילה (העוגן שלנו)
+                // שלב 1: בשבוע יכולים להיות כמה חלונות (למשל יום כיפור ביום א' ושבת+סוכות ביום ו').
+                // העוגן הוא ההבדלה הקרובה שעוד לא עברה, והכניסה היא הדלקת הנרות הראשונה אחרי ההבדלה הקודמת
+                // (כך חג שצמוד לשבת ללא הבדלה ביניהם נחשב חלון אחד)
+                const nowTime = Date.now();
+                let prevHavdalah = null;
                 for (let item of data.items) {
-                    if (item.category === "candles" && !shabbatStart) {
-                        shabbatStart = new Date(item.date);
-                        // שומרים את תאריך הכניסה כטקסט נקי (YYYY-MM-DD) כדי להשוות מולו
-                        candlesDateStr = item.date.substring(0, 10);
-                    }
                     if (item.category === "havdalah") {
-                        shabbatEnd = new Date(item.date);
+                        const t = new Date(item.date);
+                        if (t.getTime() >= nowTime) { shabbatEnd = t; break; }
+                        prevHavdalah = t;
+                        shabbatStart = null;
+                    }
+                    if (item.category === "candles" && !shabbatStart) {
+                        const t = new Date(item.date);
+                        if (!prevHavdalah || t > prevHavdalah) shabbatStart = t;
                     }
                 }
 
-                // שלב 2: חילוץ החג והפרשה - דילוג על אירועי אמצע שבוע שכבר עברו
+                if (!shabbatEnd) {
+                    fetchShabbatTimes(daysOffset + 7);
+                    return;
+                }
+
+                // שלב 2: חילוץ החג והפרשה - רק אירועים שבתוך החלון הנוכחי
+                const startDateStr = shabbatStart ? shabbatStart.toLocaleDateString('en-CA', {timeZone:'Asia/Jerusalem'}) : "";
+                const endDateStr = shabbatEnd.toLocaleDateString('en-CA', {timeZone:'Asia/Jerusalem'});
+                let erevName = "";
                 for (let item of data.items) {
                     let itemDateStr = item.date.substring(0, 10);
+                    if ((startDateStr && itemDateStr < startDateStr) || itemDateStr > endDateStr) continue;
 
-                    // אם מצאנו מועד כניסת שבת, מדלגים על כל אירוע שקדם לו
-                    if (candlesDateStr && itemDateStr < candlesDateStr) {
-                        continue;
-                    }
-
-                    if (item.category === "holiday" && !holidayName) {
-                        holidayName = item.hebrew;
+                    if (item.category === "holiday") {
+                        // מעדיפים את שם החג עצמו ("סוכות א׳") על פני "ערב סוכות"
+                        if (item.title.startsWith("Erev ")) { if (!erevName) erevName = item.hebrew; }
+                        else if (!holidayName) holidayName = item.hebrew;
                     }
                     if (item.category === "parashat" && !parashaName) {
                         parashaName = item.hebrew;
                     }
                 }
-
-                if (shabbatEnd && new Date() > shabbatEnd) {
-                    fetchShabbatTimes(daysOffset + 7);
-                    return;
-                }
+                if (!holidayName) holidayName = erevName;
 
                 let displayTitleArr = [];
                 if (holidayName) displayTitleArr.push(holidayName);
