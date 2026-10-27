@@ -180,10 +180,14 @@
             color: #f2545b; filter: none; animation: errorBlink 1.4s ease-in-out infinite;
         }
         @keyframes errorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
-        /* חצים הם אימוג'י צבעוני - background-clip:text שובר את הצבע שלהם, לכן מאפסים את אפקט הגרדיאנט */
+        /* חצים הם אימוג'י צבעוני - מכריחים את אפל/אייפון לבטל את השקיפות של הטקסט */
         .floor-arrow {
-            background: none; -webkit-background-clip: initial; background-clip: initial;
-            color: #ffffff; filter: none;
+            background: none !important; 
+            -webkit-background-clip: initial !important; 
+            background-clip: initial !important;
+            color: initial !important; 
+            -webkit-text-fill-color: initial !important;
+            filter: none !important;
         }
 
         /* השורה התחתונה: הטיימר ובחירת הקומה יחד */
@@ -811,6 +815,7 @@
         fetchShabbatTimes();
         fetchWeather();
         setInterval(fetchWeather, 3 * 60 * 60 * 1000);
+        
         // ==========================================
         // --- מנגנון החלקת פיקסלים למניעת צריבת מסך ---
         // ==========================================
