@@ -26,8 +26,8 @@ let viewers = 0;
 
 mqttClient.on('connect', () => {
   console.log('Connected to HiveMQ Cloud');
-  mqttClient.subscribe('building/elevator/left');
-  mqttClient.subscribe('building/elevator/right');
+  mqttClient.subscribe('building/shamir17/left');
+  mqttClient.subscribe('building/shamir17/right');
 });
 
 // קבלת עדכון מ-HiveMQ והפצתו לכל הדפדפנים המחוברים
