@@ -13,7 +13,7 @@ const io = new Server(server, {
 });
 
 // התחברות ל-HiveMQ Cloud (כאן הסיסמאות מוגנות כי זה רץ בשרת)
-const mqttClient = mqtt.connect('mqtts://0852feda51774f119a43581a3c72b6b9.s1.eu.hivemq.cloud:8883', {
+const mqttClient = mqtt.connect('mqtts://f16a8a6e.ala.eu-central-1.emqxsl.com:8883', {
   username: 'avihai',
   password: 'Love5683',
   clientId: 'NodeServer_' + Math.random().toString(16).substring(2, 8)
